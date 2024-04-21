@@ -1,0 +1,62 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
+// boolean 배열 vis와 관련 로직을 추가해 통과.
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static final int INFINITY = Integer.MAX_VALUE;
+	// private static final int UNDEFINED = -1; prev 원소들의 초기값
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int cityCount = readInt(), busCount = readInt(), startCity, targetCity, alt;
+		// 경로를 출력하는 게 아니라 비용만 출력하는 것이므로 필요없다.
+		// int[] prev = new int[cityCount];
+		int[] dist = new int[cityCount], cur;
+		List<List<int[]>> graph = new ArrayList<>();
+		PriorityQueue<int[]> pq = new PriorityQueue<>(cityCount, (a, b) -> a[1] - b[1]);
+		boolean[] vis = new boolean[cityCount];
+
+		for (int i = 0; i < cityCount; i++) {
+			dist[i] = INFINITY;
+			graph.add(new ArrayList<>());
+		}
+		for (int i = 0; i < busCount; i++)
+			graph.get(readInt() - 1).add(new int[] { readInt() - 1, readInt() });
+		startCity = readInt() - 1;
+		targetCity = readInt() - 1;
+		dist[startCity] = 0;
+		pq.add(new int[] { startCity, 0 });
+		while (!pq.isEmpty()) {
+			cur = pq.poll();
+			if (vis[cur[0]])
+				continue;
+			for (int[] neighbor : graph.get(cur[0])) {
+				alt = dist[cur[0]] + neighbor[1];
+				if (alt < dist[neighbor[0]]) {
+					dist[neighbor[0]] = alt;
+					pq.add(new int[] { neighbor[0], alt });
+				}
+			}
+			vis[cur[0]] = true;
+		}
+		bw.append(String.valueOf(dist[targetCity])).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
