@@ -1,0 +1,36 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static int n;
+	private static int[] dp;
+
+	private static void recur(int hOriginal) {
+		// hOriginal을 둘로 나눠 곱한 값이 가장 클 때는 둘의 차이를 최소화해서 나눌 때다.
+		int hHalf = hOriginal >>> 1, joy = hHalf * (hOriginal - hHalf);
+
+		if (dp[hOriginal] > -1)
+			return;
+		recur(hHalf);
+		recur(hOriginal - hHalf);
+		dp[hOriginal] = joy + dp[hHalf] + dp[hOriginal - hHalf];
+	}
+
+	public static void main(String[] args) throws IOException {
+		n = Integer.parseInt(br.readLine());
+		dp = new int[11];
+		dp[2] = 1;
+		for (int i = 3; i <= n; i++)
+			dp[i] = -1;
+		recur(n);
+		bw.append(String.valueOf(dp[n])).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
