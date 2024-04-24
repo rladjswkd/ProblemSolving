@@ -1,0 +1,174 @@
+
+/*
+ * 2 ~ 전기줄 개수 - 1만큼 돌면서 백트래킹 호출 -> 이때 전기줄 개수는 제거해야 할 전기줄의 개수로 사용
+ * 백트래킹 함수 내에선 제거해야 할 전기줄의 개수만큼 제거를 했을 때 전기줄이 겹치는지 확인
+ * 	전기줄을 순서대로 돌면서 a의 위치 번호, b의 위치 번호를 기억하고 n번째 전기줄의 a의 위치 번호와 b의 위치 번호가 n - 1번째 전기줄의 a의 위치 번호와 b의 위치 번호 보다 크다면(하나라도) 겹치는 것
+ */
+/*
+ * 땡! 아래 코드처럼 구현하면 입력이 클 때 시간초과 100%
+ * 100
+ * 1 100
+ * 2 99
+ * 3 98
+ * 4 97
+ * 5 96
+ * 6 95
+ * 7 94
+ * 8 93
+ * 9 92
+ * 10 91
+ * 11 90
+ * 12 89
+ * 13 88
+ * 14 87
+ * 15 86
+ * 16 85
+ * 17 84
+ * 18 83
+ * 19 82
+ * 20 81
+ * 21 80
+ * 22 79
+ * 23 78
+ * 24 77
+ * 25 76
+ * 26 75
+ * 27 74
+ * 28 73
+ * 29 72
+ * 30 71
+ * 31 70
+ * 32 69
+ * 33 68
+ * 34 67
+ * 35 66
+ * 36 65
+ * 37 64
+ * 38 63
+ * 39 62
+ * 40 61
+ * 41 60
+ * 42 59
+ * 43 58
+ * 44 57
+ * 45 56
+ * 46 55
+ * 47 54
+ * 48 53
+ * 49 52
+ * 50 51
+ * 51 50
+ * 52 49
+ * 53 48
+ * 54 47
+ * 55 46
+ * 56 45
+ * 57 44
+ * 58 43
+ * 59 42
+ * 60 41
+ * 61 40
+ * 62 39
+ * 63 38
+ * 64 37
+ * 65 36
+ * 66 35
+ * 67 34
+ * 68 33
+ * 69 32
+ * 70 31
+ * 71 30
+ * 72 29
+ * 73 28
+ * 74 27
+ * 75 26
+ * 76 25
+ * 77 24
+ * 78 23
+ * 79 22
+ * 80 21
+ * 81 20
+ * 82 19
+ * 83 18
+ * 84 17
+ * 85 16
+ * 86 15
+ * 87 14
+ * 88 13
+ * 89 12
+ * 90 11
+ * 91 10
+ * 92 9
+ * 93 8
+ * 94 7
+ * 95 6
+ * 96 5
+ * 97 4
+ * 98 3
+ * 99 2
+ * 100 1
+ */
+
+// dp로 접근해야겠다.
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Arrays;
+
+public class Main {
+	private static int len;
+	private static int[][] cables;
+	private static boolean[] isRemoved;
+	private static boolean flag; // 답을 찾았을 때 true로 설정하고, true면 재귀호출된 모든 backtrack를 실행하지 않게 구현
+
+	private static void checkCableOverlapping() {
+		int b = 0;
+
+		for (int i = 0; i < cables.length; i++) {
+			if (!isRemoved[i] && cables[i][1] < b)
+				return;
+			b = cables[i][1];
+		}
+		flag = true;
+	}
+
+	private static void backtrack(int idx, int r) {
+		if (flag)
+			return;
+		if (r == 0) {
+			checkCableOverlapping();
+			return;
+		}
+		for (int i = idx; i < cables.length - r + 1 && !flag; i++) {
+			isRemoved[i] = true;
+			backtrack(idx + 1, r - 1);
+			isRemoved[i] = false;
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+		String[] input;
+		int cnt = 0;
+
+		len = Integer.parseInt(br.readLine());
+		cables = new int[len][];
+		isRemoved = new boolean[len];
+		for (int i = 0; i < len; i++) {
+			input = br.readLine().split(" ");
+			cables[i] = new int[] { Integer.parseInt(input[0]), Integer.parseInt(input[1]) };
+		}
+		Arrays.sort(cables, (u, v) -> u[0] - v[0]); // A 전봇대의 번호 순서대로 오름차순 정렬
+		checkCableOverlapping();
+		for (; cnt <= len && !flag; cnt++)
+			backtrack(0, cnt);
+		bw.write(cnt + "\n");
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
