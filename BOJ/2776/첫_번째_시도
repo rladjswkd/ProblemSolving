@@ -1,0 +1,59 @@
+/*
+ * 이분 탐색으로 시도했으나 시간초과.. 애초에 이분 탐색 유형으로 넣으면 안되는 거 아닌가
+ */
+
+ import java.io.*;
+import java.util.*;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static int[] note;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static int binarySearch(int val) {
+		int start = 0, end = note.length - 1, mid = end;
+
+		while (start <= end) {
+			mid = (start + end) / 2;
+			if (note[mid] < val)
+				start = mid + 1;
+			else if (note[mid] > val)
+				end = mid - 1;
+			else
+				break;
+		}
+		return mid;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int t = readInt(), cnt, val;
+		StringBuilder sb = new StringBuilder();
+
+		while (t-- > 0) {
+			note = new int[readInt()];
+			for (int i = 0; i < note.length; i++)
+				note[i] = readInt();
+			Arrays.sort(note);
+			cnt = readInt();
+			for (int i = 0; i < cnt; i++) {
+				val = readInt();
+				if (note[binarySearch(val)] == val)
+					sb.append("1\n");
+				else
+					sb.append("0\n");
+			}
+		}
+		bw.write(sb.toString());
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
