@@ -1,0 +1,82 @@
+
+/*
+ * BFS나 DFS
+ * 
+ * 가로 -> 가로, 대각선
+ * 세로 -> 세로, 대각선
+ * 대각선 -> 가로, 세로, 대각선
+ * 
+ * 가로를 0, 세로를 1, 대각선을 2로 표현하고, 파이프는 오른쪽 하단 끝으로만 표현
+ * 
+ * 참고) 그림 설명을 보면 대각선일 때 꼭 빈간이어야 하는 칸은 세 곳이다.
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static int n;
+	private static int[][] house, dist;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static void solve() {
+		int nx, ny, size;
+		int[] cur;
+		Deque<int[]> stack = new ArrayDeque<>();
+
+		// x좌표, y좌표, 상태(가로:0, 세로:1, 대각선:2)
+		dist[0][0] = dist[0][1] = 1;
+		stack.addLast(new int[] { 0, 1, 0 });
+		while (!stack.isEmpty()) {
+			size = stack.size();
+			while (size-- > 0) {
+				cur = stack.removeLast();
+				nx = cur[0] + 1;
+				ny = cur[1] + 1;
+				// 가로
+				if ((cur[2] == 0 || cur[2] == 2) && 0 <= cur[0] && cur[0] < n && 0 <= ny && ny < n && house[cur[0]][ny] == 0) {
+					stack.addLast(new int[] { cur[0], ny, 0 });
+					dist[cur[0]][ny]++;
+				}
+				// 세로
+				if ((cur[2] == 1 || cur[2] == 2) && 0 <= nx && nx < n && 0 <= cur[1] && cur[1] < n && house[nx][cur[1]] == 0) {
+					stack.addLast(new int[] { nx, cur[1], 1 });
+					dist[nx][cur[1]]++;
+				}
+				// 대각선
+				if (0 <= nx && nx < n && 0 <= ny && ny < n && house[nx][ny] == 0 && house[cur[0]][ny] == 0
+						&& house[nx][cur[1]] == 0) {
+					stack.addLast(new int[] { nx, ny, 2 });
+					dist[nx][ny]++;
+				}
+			}
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		n = readInt();
+		house = new int[n][n];
+		dist = new int[n][n];
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				house[i][j] = readInt();
+		solve();
+		bw.append(String.valueOf(dist[n - 1][n - 1])).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
