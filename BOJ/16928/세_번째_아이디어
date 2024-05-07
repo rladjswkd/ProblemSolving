@@ -1,0 +1,90 @@
+/*
+ * DAG
+ * 
+ * 그래프로 생각
+ * 간선: 앞 6개의 노드, 사다리, 뱀
+ * 
+ * -> 1에서 100까지의 최단 거리 -> BFS
+ * 
+ * 참고 예시
+ * 1 5
+ * 2 92
+ * 94 3
+ * 95 4
+ * 96 5
+ * 97 6
+ * 98 7
+ * 정답: 4
+ * 3이 정답이 아니다. 사다리, 뱀을 만나면 무조건 타고 이동해야지 거기서 1 ~ 6칸 이동할 수 없다.
+ */
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static int solve(Map<Integer, Integer> ladders, Map<Integer, Integer> snakes) {
+		Deque<Integer> q = new ArrayDeque<>();
+		int[] dist = new int[101];
+		int cur, next;
+
+		// 1번 칸과 100번 칸은 뱀과 사다리의 시작 또는 끝이 아니다.
+		q.addLast(1);
+		while (!q.isEmpty() && dist[100] == 0) {
+			cur = q.removeFirst();
+			if (ladders.containsKey(cur)) {
+				dist[ladders.get(cur)] = dist[cur];
+				q.addLast(ladders.get(cur));
+			} else if (snakes.containsKey(cur)) {
+				dist[snakes.get(cur)] = dist[cur];
+				q.addLast(snakes.get(cur));
+			} else {
+				for (int i = 1; i <= 6; i++) {
+					if (100 < (next = cur + i))
+						break;
+					if (dist[next] == 0 || dist[cur] + 1 < dist[next]) {
+						dist[next] = dist[cur] + 1;
+						q.addLast(next);
+					}
+				}
+			}
+		}
+		return dist[100];
+	}
+
+	public static void main(String[] args) throws IOException {
+		int ladderCount = readInt(), snakeCount = readInt();
+		Map<Integer, Integer> ladders = new HashMap<>(ladderCount), snakes = new HashMap<>(snakeCount);
+
+		for (int i = 0; i < ladderCount; i++)
+			ladders.put(readInt(), readInt());
+		for (int i = 0; i < snakeCount; i++)
+			snakes.put(readInt(), readInt());
+		bw.append(String.valueOf(solve(ladders, snakes))).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
+
+/*
+ * 사다리와 뱀을 타는 경우는 이동 횟수가 증가하지 않는 경우이므로, dist 값이 dist[cur]과 같은 칸들에서 1 ~ 6칸 이동한 칸들보다 큐에 먼저 들어가야 한다.
+ * -> Main.java
+ */

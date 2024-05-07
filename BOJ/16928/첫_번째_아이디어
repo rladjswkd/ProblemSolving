@@ -1,0 +1,76 @@
+
+/*
+ * DP
+ * 사다리, 뱀 -> 시작 위치 기준 정렬하고 이분 탐색 or 해시 맵
+ * 
+ * 반례)
+ * 2 1
+ * 2 60
+ * 21 99
+ * 61 20
+ * 
+ * 위 반례는 주사위를 2까지 이동하고 사다리를 타고 60까지 이동하는데 1번,
+ * 61까지 이동하고 뱀을 탄 뒤 20으로 이동하는데 1번,
+ * 21까지 이동하고 사다리를 탄 뒤 99까지 이동하는데 1번,
+ * 99에서 100까지 이동하는데 1번으로 총 4번만 굴리면 된다.
+ * 
+ * 하지만 아래와 같은 방식의 DP로 풀면 61->20인 뱀을 타고 이동하면 dp[20]의 값을 업데이트한다 해도 dp[20]이 그 후로 고려되지 않는다.
+ * 
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int ladderCount = readInt(), snakeCount = readInt();
+		Map<Integer, Integer> ladders = new HashMap<>(ladderCount), snakes = new HashMap<>(snakeCount);
+		int[] dp = new int[101];
+
+		// 모든 칸은 최대 하나의 사다리 또는 뱀만 가질 수 있다. -> 키 중복 없음
+		for (int i = 0; i < ladderCount; i++)
+			ladders.put(readInt(), readInt());
+		for (int i = 0; i < snakeCount; i++)
+			snakes.put(readInt(), readInt());
+		for (int i = 2; i <= 7; i++) {
+			dp[i] = 1;
+			if (ladders.containsKey(i))
+				dp[ladders.get(i)] = 1;
+			// 7 이하의 칸으로 이동하기 위해 주사위를 굴려야 할 최소 횟수를 구할 때뱀을 고려할 필요는 없다.
+			// 뱀을 만나면 i보다 값이 낮은 위치로 이동할텐데 어차피 7 이하의 위치로 이동하기 위해 주사위를 굴려야 하는 최소 횟수는 1이다.
+		}
+		for (int i = 8; i < dp.length; i++) {
+			if (dp[i] == 0) {
+				dp[i] = Integer.MAX_VALUE;
+				for (int sub = 1; sub <= 6; sub++)
+					if (!ladders.containsKey(i - sub) && !snakes.containsKey(i - sub))
+						dp[i] = Math.min(dp[i], dp[i - sub] + 1);
+			}
+			// 1번 칸부터 100번 칸까지 순서대로 탐색하고 있고 모든 칸은 최대 하나의 사다리나 뱀만 가질 수 있기 때문에,
+			// 사다리를 타고 현재 칸보다 윗 칸(x)으로 이동하는 경우엔 dp[x]는 무조건 0이다.
+			// 반대로 뱀을 타고 이동하는 경우엔 이동한 칸의 dp 값은 무조건 0보다 크고 현재 칸까지의 주사위를 굴린 최소 횟수보다 적다.
+			// 현재 칸에서 뱀을 타고 이동하는 경우를 고려할 필요가 전혀 없다. 다만 뱀의 시작 칸은 dp로 고려하면 안된다.
+			if (ladders.containsKey(i))
+				dp[ladders.get(i)] = dp[i];
+		}
+		System.out.println(dp[100]);
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}

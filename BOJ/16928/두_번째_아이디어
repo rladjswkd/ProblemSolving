@@ -1,0 +1,98 @@
+
+/*
+ * 첫 번째 아이디어에서 주사위를 굴리며 이동한 경우, 사다리를 타고 이동한 경우, 뱀을 타고 이동한 경우를 모두 고려해서
+ * dp의 값을 모두 해당 칸까지 이동하기 위한 최소값으로 업데이트 한 후,
+ * 다시 dp를 1부터 100까지 순회하며 현재 칸을 직전 6칸 중 최솟값 + 1과 자신의 값 중 더 작은 값으로 업데이트한다. 
+ * 
+ * 반례
+ * 
+ * 3 2
+ * 2 40
+ * 31 70
+ * 51 99
+ * 41 30
+ * 71 50
+ *
+ * 1 -> 2 -> 40 1회
+ * 40 -> 41 -> 30 2회
+ * 30 -> 31 -> 70 3회
+ * 70 -> 71 -> 50 4회
+ * 50 -> 51 -> 99 5회
+ * 99 -> 100 6회 
+ * 
+ * 답: 6회
+ * 출력: 8회
+ * 
+ * 큰 값으로 사다리 이동했다가 작은 값으로 뱀 이동했다가 다시 큰 값으로 사다리 이동했다가 다시 작은 값으로 뱀 이동했다가 반복 ->
+ * 처음 dp 순회 시 40 -> 41 -> 30 2회 까지는 dp[30]에 적용된다. 이후 두 번째 dp 순회시 dp[30]의 값 2를 반영하는 것이 가능하므로,
+ * 30 -> 31 -> 70 까지 반영돼 dp[70]은 3으로 업데이트된다. 이후 순차 탐색에 의해 70 -> 71 -> 50도 반영되고 dp[50]이 4회로 업데이트되지만,
+ * 이미 탐색하는 지점이 50을 넘어섰으므로 50 -> 51 -> 99부터 반영되지 않는다.
+ * 따라서 dp[70] = 3을 이용하여 dp[100] = 3 + (100 - 70) / 6 = 8이 도출되는 것이다.
+ * 
+ * 정리하면, 위 반례와 같이 지그재그로 사다리와 뱀이 포진하면 그 횟수만큼 dp를 다시 순회해줘야 하는데 그 횟수를 정확하게 구할 방법이 마땅찮다.
+ * 
+ * BFS 방식으로 풀고 보니, 위 반례에 대해 답이라고 생각한 6회도 답이 아니었다. 실제 이동은 다음과 같다(기존 DP로 풀면 위 과정을 거치긴 한다. 즉, 기존 풀이는 완전 잘못된 풀이다).
+ * 
+ * 1 -> 2 -> 40 1회
+ * 40 -> 51 -> 99 3회
+ * 99 -> 100 4회
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int ladderCount = readInt(), snakeCount = readInt();
+		Map<Integer, Integer> ladders = new HashMap<>(ladderCount), snakes = new HashMap<>(snakeCount);
+		int[] dp = new int[101];
+
+		for (int i = 0; i < ladderCount; i++)
+			ladders.put(readInt(), readInt());
+		for (int i = 0; i < snakeCount; i++)
+			snakes.put(readInt(), readInt());
+		for (int i = 2; i <= 7; i++) {
+			dp[i] = 1;
+			if (ladders.containsKey(i))
+				dp[ladders.get(i)] = 1;
+		}
+		for (int i = 8; i < dp.length; i++) {
+			if (dp[i] == 0) {
+				dp[i] = 17;
+				for (int sub = 1; sub <= 6; sub++)
+					if (!ladders.containsKey(i - sub) && !snakes.containsKey(i - sub))
+						dp[i] = Math.min(dp[i], dp[i - sub] + 1);
+			}
+			if (ladders.containsKey(i))
+				dp[ladders.get(i)] = dp[i];
+			if (snakes.containsKey(i) && dp[i] < dp[snakes.get(i)])
+				dp[snakes.get(i)] = dp[i];
+		}
+		for (int i = 8; i < dp.length; i++) {
+			for (int sub = 1; sub <= 6; sub++)
+				if (!ladders.containsKey(i - sub) && !snakes.containsKey(i - sub))
+					dp[i] = Math.min(dp[i], dp[i - sub] + 1);
+			if (ladders.containsKey(i))
+				dp[ladders.get(i)] = dp[i];
+		}
+		System.out.println(dp[100]);
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
