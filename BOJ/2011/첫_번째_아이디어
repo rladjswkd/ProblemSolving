@@ -1,0 +1,75 @@
+
+/*
+ * 브루트포스
+ * 
+ * A	1
+ * B	2
+ * C	3
+ * D	4
+ * E	5
+ * F	6
+ * G	7
+ * H	8
+ * I	9
+ * 
+ * J	10
+ * K	11
+ * L	12
+ * M	13
+ * N	14
+ * O	15
+ * P	16
+ * Q	17
+ * R	18
+ * S	19
+ * 
+ * T	20
+ * U	21
+ * V	22
+ * W	23
+ * X	24
+ * Y	25
+ * Z	26
+ * 
+ * 암호가 잘못된 경우?
+ * 1. 0으로 시작
+ * 2. 0이 포함된 유효하지 않은 숫자 ex) 30 40 50 ...
+ * 		0이 포함되지 않으면 유효하지 않을 수 없다. -> 19: S, 55: EE 999: III
+ * 
+ * 
+ * 위 방식은 답은 맞지만 1이 5000개 들어오는 입력에 대해 시간 초과
+ * -> 예를 들어 123이 있을 때, 12까지를 1, 2로 처리하든 12로 처리하든 3이 중복되어 처리된다.
+ * 
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int solve(char[] crypto, int idx) {
+		int acc;
+
+		if (idx == crypto.length)
+			return 1;
+		if (crypto[idx] == '0')
+			return 0;
+		acc = solve(crypto, idx + 1) % 1000000;
+		if (crypto.length - idx >= 2 && (crypto[idx] - 48) * 10 + crypto[idx + 1] - 48 <= 26)
+			acc += solve(crypto, idx + 2) % 1000000;
+		return acc % 1000000;
+	}
+
+	public static void main(String[] args) throws IOException {
+		char[] crypto = br.readLine().toCharArray();
+
+		bw.append(String.valueOf(solve(crypto, 0))).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
