@@ -1,0 +1,64 @@
+
+/*
+ * 1000000 5 -> 1015808
+ * 
+ * 507904
+ * 253952
+ * 126976
+ * 63488
+ * 31744
+ * 15872
+ * 7936
+ * 3968
+ * 1984
+ * 992
+ * 496
+ * 248
+ * 124
+ * 62
+ * 31 -> 1개 고정, 30개 병합
+ * 15 -> 1개 고정, 14개 병합
+ * 7 -> 1개 고정, 6개 병합
+ * 3 -> 1개 고정, 2개 병합
+ * 1 -> 마지막. 총 5개
+ * 0
+ * 
+ * 1 ~ k개 반복 (고정시키는 물병의 개수. 즉, 홀수가 k번 나온 후 짝수 등장)
+ * 	홀수에 대한 계산이 끝난 후엔 주어진 n보다 값이 커질 때까지 2를 곱한다.
+ * 
+ * k가 크면(예를 들어 1000이 들어오면) 2^1000이 연산에 포함되기 때문에 표현할 수 있는 자료형도 없고 시간도 초과할 것이다.
+ */
+import java.io.*;
+import java.util.*;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), k = readInt(), total, odd, res = Integer.MAX_VALUE;
+
+		for (int i = 1; i <= k; i++) {
+			total = 0;
+			odd = i;
+			while (odd-- > 0)
+				total = (total << 1) + 1;
+			while (total < n)
+				total <<= 1;
+			if (total - n < res)
+				res = total - n;
+		}
+		bw.append(String.valueOf(res)).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
