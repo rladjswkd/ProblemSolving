@@ -1,0 +1,71 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Deque;
+import java.util.ArrayDeque;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static boolean res = true;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static void solve(List<List<Integer>> graph, int[] plan) {
+		Deque<Integer> q = new ArrayDeque<>();
+		boolean[] visited = new boolean[graph.size()];
+		int cur;
+
+		q.addLast(plan[0]);
+		visited[plan[0]] = true;
+		while (!q.isEmpty()) {
+			cur = q.removeFirst();
+			for (int neighbor : graph.get(cur)) {
+				if (!visited[neighbor]) {
+					q.addLast(neighbor);
+					visited[neighbor] = true;
+				}
+			}
+		}
+		for (int city : plan) {
+			if (!visited[city]) {
+				res = false;
+				break;
+			}
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		int cityCount = readInt(), connection;
+		int[] plan = new int[readInt()];
+		List<List<Integer>> graph = new ArrayList<>();
+
+		for (int i = 0; i < cityCount; i++)
+			graph.add(new ArrayList<>());
+		for (int i = 0; i < cityCount; i++) {
+			for (int j = 0; j < cityCount; j++) {
+				connection = br.read() - 48;
+				br.read();
+				if (connection == 1)
+					graph.get(i).add(j);
+			}
+		}
+		for (int i = 0; i < plan.length; i++)
+			plan[i] = readInt() - 1;
+		solve(graph, plan);
+		bw.write(res ? "YES\n" : "NO\n");
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
