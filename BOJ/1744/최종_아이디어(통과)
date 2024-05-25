@@ -1,0 +1,68 @@
+
+/*
+ * 자체적으로 생성한 Comparator를 사용하면 코드가 되게 느려진다.
+ * 가능하면 Collections.sort(target)나 Collections.sort(target, Collections.reverseOrder())를 사용하자.
+ * 
+ * 이들 대신 positives.sort((a, b) -> b - a)나 zeroOrLess((a, b) -> a - b) 중 하나라도 사용하면 224ms가 나오고, 둘 다 사용하지 않으면 80ms 언저리가 나온다.
+ * 게다가 이상하게 이 문제는 readInt() 함수를 정의해서 사용하면 더 느리고 Integer.parseInt(br.readLine())을 사용하는 게 더 빠르다.
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int solve(List<Integer> positives, List<Integer> zeroOrLess) {
+		int res = 0, index = 0, first, second;
+
+		Collections.sort(positives, Collections.reverseOrder());
+		Collections.sort(zeroOrLess);
+		while (index < positives.size()) {
+			if (index == positives.size() - 1)
+				res += positives.get(index++);
+			else {
+				first = positives.get(index);
+				second = positives.get(index + 1);
+				if (first != 1 && second != 1)
+					res += first * second;
+				else
+					res += first + second;
+				index += 2;
+			}
+		}
+		index = 0;
+		while (index < zeroOrLess.size()) {
+			if (index == zeroOrLess.size() - 1)
+				res += zeroOrLess.get(index++);
+			else {
+				res += zeroOrLess.get(index) * zeroOrLess.get(index + 1);
+				index += 2;
+			}
+		}
+		return res;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = Integer.parseInt(br.readLine()), val;
+		List<Integer> positives = new ArrayList<>(), zeroOrLess = new ArrayList<>();
+
+		for (int i = 0; i < n; i++) {
+			val = Integer.parseInt(br.readLine());
+			if (val > 0)
+				positives.add(val);
+			else
+				zeroOrLess.add(val);
+		}
+		bw.append(String.valueOf(solve(positives, zeroOrLess))).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}

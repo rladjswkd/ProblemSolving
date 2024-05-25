@@ -1,0 +1,80 @@
+
+/*
+ * 첫 번째 아이디어에서 개선을 시도한 코드
+ * 1. 두 값을 더한 것과 곱한 것을 비교하기 위한 연산이 불필요해 제거.
+ * 
+ * 그럼에도 백준 제출 시 실행 시간이 똑같이 걸린다.
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur, sign = br.read();
+
+		if (sign != '-')
+			n = sign - 48;
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		if (sign == '-')
+			n = -n;
+		return n;
+	}
+
+	private static int solve(List<Integer> positives, List<Integer> zeroOrLess) {
+		int res = 0, index = 0, first, second;
+
+		positives.sort((a, b) -> b - a);
+		zeroOrLess.sort((a, b) -> a - b);
+		// 양수는 둘 중 하나가 1이 아니면 무조건 곱하는 게 낫거나 더한 것과 같다(2, 2).
+		while (index < positives.size()) {
+			if (index == positives.size() - 1)
+				res += positives.get(index++);
+			else {
+				first = positives.get(index);
+				second = positives.get(index + 1);
+				if (first != 1 && second != 1)
+					res += first * second;
+				else
+					res += first + second;
+				index += 2;
+			}
+		}
+		index = 0;
+		// 음수는 무조건 둘이 곱하는 게 낫다. -1, 0이어도 둘이 곱하는 게 낫다.
+		while (index < zeroOrLess.size()) {
+			if (index == zeroOrLess.size() - 1)
+				res += zeroOrLess.get(index++);
+			else {
+				res += zeroOrLess.get(index) * zeroOrLess.get(index + 1);
+				index += 2;
+			}
+		}
+		return res;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), val;
+		List<Integer> positives = new ArrayList<>(), zeroOrLess = new ArrayList<>();
+
+		for (int i = 0; i < n; i++) {
+			val = readInt();
+			if (val > 0)
+				positives.add(val);
+			else
+				zeroOrLess.add(val);
+		}
+		bw.append(String.valueOf(solve(positives, zeroOrLess))).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}

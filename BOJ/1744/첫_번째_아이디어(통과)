@@ -1,0 +1,79 @@
+
+/*
+ * 정렬하고, 큰 수부터 그 다음 큰 수와 곱했을 때 그 값이 두 수를 그냥 더한 것보다 크면 곱하고 결과에 누적시키기
+ * 그리디?
+ * 
+ * 큰 수부터 정렬하면 음수는 -1, -2, -3 ... 과 같이 절댓값이 작은 수부터 정렬되는데, 그러면 원하는 결과를 얻을 수 없다.
+ * (-1, -2, -3이면 2 + (-3))
+ * 
+ * 양수와 음수를 나눠서 저장하고 별도로 처리하자.
+ * 0은 양수와 곱해서 좋을 일이 없으니 상황에 따라 음수와 곱하게 음수와 함께 저장하자.
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur, sign = br.read();
+
+		if (sign != '-')
+			n = sign - 48;
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		if (sign == '-')
+			n = -n;
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), res = 0, index = 0, val;
+		List<Integer> positives = new ArrayList<>(), zeroOrLess = new ArrayList<>();
+
+		for (int i = 0; i < n; i++) {
+			val = readInt();
+			if (val > 0)
+				positives.add(val);
+			else
+				zeroOrLess.add(val);
+		}
+		positives.sort((a, b) -> b - a);
+		zeroOrLess.sort((a, b) -> a - b);
+		while (index < positives.size()) {
+			if (index == positives.size() - 1)
+				res += positives.get(index++);
+			// index == positives.size() - 1에 대한 else지만 while문의 조건을 통과한 이후므로 무조건 index <
+			// positives.size() - 1인 상황이다.
+			else {
+				if (positives.get(index) + positives.get(index + 1) < positives.get(index) * positives.get(index + 1)) {
+					res += positives.get(index) * positives.get(index + 1);
+					index += 2;
+				} else
+					res += positives.get(index++); // 그냥 seq.get(index) + seq.get(index + 1)을 더하고 index를 두 칸 넘겨도 문제 없을듯
+			}
+		}
+		index = 0;
+		while (index < zeroOrLess.size()) {
+			if (index == zeroOrLess.size() - 1)
+				res += zeroOrLess.get(index++);
+			else {
+				if (zeroOrLess.get(index) + zeroOrLess.get(index + 1) < zeroOrLess.get(index) * zeroOrLess.get(index + 1)) {
+					res += zeroOrLess.get(index) * zeroOrLess.get(index + 1);
+					index += 2;
+				} else
+					res += zeroOrLess.get(index++);
+			}
+		}
+		bw.append(String.valueOf(res)).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
