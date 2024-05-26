@@ -1,0 +1,35 @@
+time: 1, cur: 5, next: 4, dp[5]: 1, dp[4]: 1
+time: 1, cur: 5, next: 6, dp[5]: 1, dp[6]: 1
+time: 1, cur: 5, next: 10, dp[5]: 1, dp[10]: 1
+
+time: 2, cur: 4, next: 3, dp[4]: 1, dp[3]: 1
+time: 2, cur: 4, next: 5, dp[4]: 1, dp[5]: 2
+time: 2, cur: 4, next: 8, dp[4]: 1, dp[8]: 1
+time: 2, cur: 6, next: 5, dp[6]: 1, dp[5]: 3
+time: 2, cur: 6, next: 7, dp[6]: 1, dp[7]: 1
+time: 2, cur: 6, next: 12, dp[6]: 1, dp[12]: 1
+time: 2, cur: 10, next: 9, dp[10]: 1, dp[9]: 1
+time: 2, cur: 10, next: 11, dp[10]: 1, dp[11]: 1
+time: 2, cur: 10, next: 20, dp[10]: 1, dp[20]: 1
+
+time: 3, cur: 3, next: 2, dp[3]: 1, dp[2]: 1
+time: 3, cur: 3, next: 4, dp[3]: 1, dp[4]: 2
+time: 3, cur: 3, next: 6, dp[3]: 1, dp[6]: 2
+time: 3, cur: 8, next: 7, dp[8]: 1, dp[7]: 2
+time: 3, cur: 8, next: 9, dp[8]: 1, dp[9]: 2
+time: 3, cur: 8, next: 16, dp[8]: 1, dp[16]: 1
+time: 3, cur: 7, next: 6, dp[7]: 2, dp[6]: 4
+time: 3, cur: 7, next: 8, dp[7]: 2, dp[8]: 3
+time: 3, cur: 7, next: 14, dp[7]: 2, dp[14]: 2
+time: 3, cur: 12, next: 11, dp[12]: 1, dp[11]: 2
+time: 3, cur: 12, next: 13, dp[12]: 1, dp[13]: 1
+time: 3, cur: 12, next: 24, dp[12]: 1, dp[24]: 1
+time: 3, cur: 9, next: 8, dp[9]: 2, dp[8]: 5
+time: 3, cur: 9, next: 10, dp[9]: 2, dp[10]: 3
+time: 3, cur: 9, next: 18, dp[9]: 2, dp[18]: 2
+time: 3, cur: 11, next: 10, dp[11]: 2, dp[10]: 5
+time: 3, cur: 11, next: 12, dp[11]: 2, dp[12]: 3
+time: 3, cur: 11, next: 22, dp[11]: 2, dp[22]: 2
+time: 3, cur: 20, next: 19, dp[20]: 1, dp[19]: 1
+time: 3, cur: 20, next: 21, dp[20]: 1, dp[21]: 1
+time: 3, cur: 20, next: 40, dp[20]: 1, dp[40]: 1
