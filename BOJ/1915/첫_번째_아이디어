@@ -1,0 +1,59 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static int[][] board;
+	private static boolean[][] visited;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static int checkSquare(int x, int y, int n, int m) {
+		int nx, ny, length = 0;
+
+		for (int i = 0; i + x < n && i + y < m; i++) {
+			nx = x + i;
+			ny = y + i;
+			length++;
+			for (int j = 0; j < length; j++)
+				if (board[nx][y + j] == 0 || board[x + j][ny] == 0)
+					return length - 1;
+			for (int j = 0; j < length; j++)
+				visited[nx][y + j] = visited[x + j][ny] = true;
+		}
+		return length;
+	}
+
+	private static int solve(int n, int m) {
+		int length = 0;
+
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)
+				if (board[i][j] == 1 && !visited[i][j])
+					length = Math.max(length, checkSquare(i, j, n, m));
+		return length * length;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), m = readInt();
+
+		board = new int[n][m];
+		visited = new boolean[n][m];
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++)
+				board[i][j] = br.read() - 48;
+			br.read();
+		}
+		bw.append(String.valueOf(solve(n, m))).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
