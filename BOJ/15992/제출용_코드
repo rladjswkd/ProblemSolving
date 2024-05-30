@@ -1,0 +1,32 @@
+import java.io.*;
+
+public class Main {
+	private static BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int r() throws IOException {
+		int n = 0, c;
+		while (48 <= (c = r.read()) && c <= 57)
+			n = (n << 3) + (n << 1) + (c & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int t = r();
+		long[][] d = new long[1000][1000];
+		StringBuilder s = new StringBuilder();
+		d[0][0] = d[1][0] = d[2][0] = 1;
+		d[1][1] = d[2][2] = 1;
+		d[2][1] = 2;
+		for (int i = 3; i < 1000; i++)
+			for (int j = 1; j < 1000; j++)
+				d[i][j] = (d[i - 1][j - 1] + d[i - 2][j - 1] + d[i - 3][j - 1]) % 1_000_000_009;
+		while (t-- > 0)
+			s.append(d[r() - 1][r() - 1]).append('\n');
+		w.write(s.toString());
+		w.flush();
+		r.close();
+		w.close();
+	}
+}
+
