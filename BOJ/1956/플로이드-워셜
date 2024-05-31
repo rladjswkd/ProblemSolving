@@ -1,0 +1,63 @@
+
+/*
+ * 최단거리 알고리즘
+ * 
+ * 1 ~ V까지 자신을 제외한 다른 마을까지 이동하는 최소 경로 비용 + 그 마을에서 다시 자신으로 이동하는 최소 경로 비용 구하기
+ * -> (X, Y)와 (Y, X)는 같다. -> 순서만 다르지 dijkstra(X, Y) + dijkstra(Y, X)기 때문이다.
+ * -> V + (V - 1) + (V - 2) + ... + 1 = V(V - 1) / 2
+ * 
+ * 다익스트라 알고리즘 시간 복잡도 : O(V^2)
+ * 
+ * -> O(V^4) -> V가 최대 400이므로 불가능..
+ * 
+ * O(V^3) ?
+ * 다익스트라 약간 변형해서 사용
+ * -> 목적지를 자기 자신으로 정해서 그때까지 계속 최소 비용인 도로만 선택
+ * 1 ~ V까지 한 번만 돌며 다익스트라 한 번만 호출 가능 -> O(V^3)
+ * 
+ * 플로이드 워셜로 풀어도 됨 -> 모든 지점 ~ 모든 나머지 지점 최단 거리를 구할 수 있다.
+ * 
+ * 플로이드 워셜이 다익스트라보다 3배 이상 빠르다.
+ * 모든 지점 -> 나머지 모든 지점으로의 최단 경로를 찾을 땐 항상 플로이드 워셜을 쓰자.
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Arrays;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static final int INFINITY = 400 * 10000 + 1;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int v = readInt(), e = readInt(), res = INFINITY;
+		int[][] costs = new int[v][v];
+
+		for (int i = 0; i < v; i++)
+			Arrays.fill(costs[i], INFINITY);
+		for (int i = 0; i < e; i++)
+			costs[readInt() - 1][readInt() - 1] = readInt();
+		for (int via = 0; via < v; via++)
+			for (int start = 0; start < v; start++)
+				for (int end = 0; end < v; end++)
+					costs[start][end] = Math.min(costs[start][end], costs[start][via] + costs[via][end]);
+		for (int i = 0; i < v; i++)
+			for (int j = i + 1; j < v; j++)
+				res = Math.min(res, costs[i][j] + costs[j][i]);
+		bw.append(String.valueOf(res == INFINITY ? -1 : res)).append('\n');
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
