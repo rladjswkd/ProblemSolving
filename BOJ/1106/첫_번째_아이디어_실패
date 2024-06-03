@@ -1,0 +1,49 @@
+import java.io.*;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static void solve(int customerCount, int cityCount, int[][] info, int[] dp) {
+		int price, customer, index;
+
+		for (int i = 0; i < dp.length; i++)
+			dp[i] = Integer.MAX_VALUE;
+		dp[0] = 0;
+		for (int[] each : info) {
+			price = each[0];
+			customer = each[1];
+			index = customer;
+			// index의 증가량을 customer로 설정했으므로, 다른 도시들의 "증가 고객 수"와의 공배수에 해당하는 인덱스에서만 다른 도시들의 결과가 반영된다.
+			// 이때문에 실패한 것이다.
+			// 통과한 코드에선 증가량을 1로 설정한다.
+			for (; index < dp.length; index += customer)
+				if (dp[index - customer] + price < dp[index])
+					dp[index] = dp[index - customer] + price;
+			if (index >= dp.length)
+				dp[customerCount] = Math.min(dp[customerCount], dp[index - customer] + price);
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		int customerCount = readInt(), cityCount = readInt();
+		int[][] info = new int[cityCount][];
+		int[] dp = new int[customerCount + 1];
+
+		for (int i = 0; i < cityCount; i++)
+			info[i] = new int[] { readInt(), readInt() };
+		solve(customerCount, cityCount, info, dp);
+		bw.write(new StringBuilder().append(dp[customerCount]).append('\n').toString());
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
