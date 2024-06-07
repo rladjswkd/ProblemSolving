@@ -1,0 +1,99 @@
+
+/*
+ * https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Using_a_priority_queue
+ * 
+ * Instead of filling the priority queue with all nodes in the initialization
+ * phase, it is also possible to initialize it to contain only source; then,
+ * inside the if alt < dist[v] block, the decrease_priority() becomes an
+ * add_with_priority() operation if the node is not already in the queue.
+ * 
+ * -> 없으면 추가하고 있으면 decrease_priority() 호출하는 방법인데,
+ * 자바의 우선순위 큐에는 decrease_priority() 관련 함수가 없다.
+ */
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
+public class Main {
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static StringBuilder sb = new StringBuilder();
+	private static List<List<Node>> graph;
+	private static final int INFINITY = 10000 * 1000 + 1;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static void solve(int computerCount, int hackedComputer) {
+		int count = 0, time = 0;
+		int[] costs = new int[computerCount];
+		Node cur;
+		boolean[] processed = new boolean[computerCount];
+		PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> a.weight - b.weight);
+
+		for (int i = 0; i < computerCount; i++)
+			costs[i] = INFINITY;
+		costs[hackedComputer] = 0;
+		pq.add(new Node(hackedComputer, 0));
+		while (!pq.isEmpty()) {
+			cur = pq.poll();
+			for (Node neighbor : graph.get(cur.id)) {
+				if (!processed[neighbor.id] && costs[cur.id] + neighbor.weight < costs[neighbor.id]) {
+					costs[neighbor.id] = costs[cur.id] + neighbor.weight;
+					if (!pq.contains(neighbor))
+						pq.add(new Node(neighbor.id, costs[neighbor.id]));
+					// else
+					// pq.decreaseKey(neighbor.id, costs[neighbor.id]);
+				}
+			}
+			processed[cur.id] = true;
+			count++;
+			if (time < costs[cur.id])
+				time = costs[cur.id];
+		}
+		sb.append(count).append(' ').append(time).append('\n');
+	}
+
+	public static void main(String[] args) throws IOException {
+		int t = readInt(), computerCount, dependencyCount, hackedComputer, sub;
+
+		while (t-- > 0) {
+			computerCount = readInt();
+			dependencyCount = readInt();
+			hackedComputer = readInt() - 1;
+			graph = new ArrayList<>();
+			for (int i = 0; i < computerCount; i++)
+				graph.add(new ArrayList<>());
+			while (dependencyCount-- > 0) {
+				sub = readInt() - 1;
+				graph.get(readInt() - 1).add(new Node(sub, readInt()));
+			}
+			solve(computerCount, hackedComputer);
+		}
+		bw.write(sb.toString());
+		bw.flush();
+		bw.close();
+	}
+
+	static class Node {
+		int id, weight;
+
+		Node(int id, int weight) {
+			this.id = id;
+			this.weight = weight;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return this.id == ((Node) obj).id;
+		}
+	}
+}
