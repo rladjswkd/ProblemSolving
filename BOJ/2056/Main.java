@@ -5,131 +5,49 @@
  * 각 작업을 시작 시각, 종료 시각 쌍으로 계산
  * 
  * dp인가..?
+ * 
+ * 위상 정렬
+ * 1. 입력을 받아 DAG 구성
+ * 2. DAG 내의 "선행 관계에 있는 작업이 하나도 없는 작업"들에 대해 DFS 호출
+ * 3. DFS는 인자로 받은 시작 시각과 자신의 작업 수행 시각을 더해 다음 노드에 대해 DFS를 재귀 호출한다.
+ * 4. 이후에 수행할 작업이 없는 노드에선 인자로 받은 시작 시각 + 자신의 작업 수행 시각과 그때까지 검사한 모든 노드들의 그 값 중 큰 값을 main()에서 활용할 수 있게 별도로 저장한다.
+ * 참고. 각 DFS 호출에서 작업이 끝난 노드를 연결리스트의 앞에 추가한 뒤 모든 DFS가 종료되면 연결리스트에 작업이 수행할 순서대로 정렬되어있다.
+ * 물론 이 순서가 유일한 순서인 것은 아니다.
  */
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.IOException;
 
 public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-	private static Reader r = new Reader();
 
-	public static void main(String[] args) throws Exception {
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
 		int preTaskCount, taskDuration, latestPreTaskEndTime, res = 0;
-		int[] taskEndTimes = new int[r.nextInt()];
+		int[] taskEndTimes = new int[readInt()];
 
 		for (int i = 0; i < taskEndTimes.length; i++) {
 			latestPreTaskEndTime = 0;
-			taskDuration = r.nextInt();
-			preTaskCount = r.nextInt();
+			taskDuration = readInt();
+			preTaskCount = readInt();
 			while (preTaskCount-- > 0)
-				latestPreTaskEndTime = Math.max(latestPreTaskEndTime, taskEndTimes[r.nextInt() - 1]);
+				latestPreTaskEndTime = Math.max(latestPreTaskEndTime, taskEndTimes[readInt() - 1]);
 			taskEndTimes[i] = latestPreTaskEndTime + taskDuration;
 			res = Math.max(taskEndTimes[i], res);
 		}
 		bw.append(String.valueOf(res)).append('\n');
 		bw.flush();
+		br.close();
 		bw.close();
-	}
-}
-
-class Reader {
-	final int SIZE = 1 << 13;
-	byte[] buffer = new byte[SIZE];
-	int index, size;
-
-	String nextString() throws Exception {
-		StringBuilder sb = new StringBuilder();
-		byte c;
-		while ((c = read()) < 32) {
-			if (size < 0)
-				return "endLine";
-		}
-		do
-			sb.appendCodePoint(c);
-		while ((c = read()) >= 32); // SPACE 분리라면 >로, 줄당 분리라면 >=로
-		return sb.toString();
-	}
-
-	char nextChar() throws Exception {
-		byte c;
-		while ((c = read()) < 32)
-			; // SPACE 분리라면 <=로, SPACE 무시라면 <로
-		return (char) c;
-	}
-
-	int nextInt() throws Exception {
-		int n = 0;
-		byte c;
-		boolean isMinus = false;
-		while ((c = read()) <= 32) {
-			if (size < 0)
-				return -1;
-		}
-		if (c == 45) {
-			c = read();
-			isMinus = true;
-		}
-		do
-			n = (n << 3) + (n << 1) + (c & 15);
-		while (isNumber(c = read()));
-		return isMinus ? ~n + 1 : n;
-	}
-
-	long nextLong() throws Exception {
-		long n = 0;
-		byte c;
-		boolean isMinus = false;
-		while ((c = read()) <= 32)
-			;
-		if (c == 45) {
-			c = read();
-			isMinus = true;
-		}
-		do
-			n = (n << 3) + (n << 1) + (c & 15);
-		while (isNumber(c = read()));
-		return isMinus ? ~n + 1 : n;
-	}
-
-	double nextDouble() throws Exception {
-		double n = 0, div = 1;
-		byte c;
-		boolean isMinus = false;
-		while ((c = read()) <= 32) {
-			if (size < 0)
-				return -12345;
-		}
-		if (c == 45) {
-			c = read();
-			isMinus = true;
-		} else if (c == 46) {
-			c = read();
-		}
-		do
-			n = (n * 10) + (c & 15);
-		while (isNumber(c = read()));
-		if (c == 46) {
-			while (isNumber(c = read())) {
-				n += (c - 48) / (div *= 10);
-			}
-		}
-		return isMinus ? -n : n;
-	}
-
-	boolean isNumber(byte c) {
-		return 47 < c && c < 58;
-	}
-
-	boolean isAlphabet(byte c) {
-		return (64 < c && c < 91) || (96 < c && c < 123);
-	}
-
-	byte read() throws Exception {
-		if (index == size) {
-			size = System.in.read(buffer, index = 0, SIZE);
-			if (size < 0)
-				buffer[0] = -1;
-		}
-		return buffer[index++];
 	}
 }
