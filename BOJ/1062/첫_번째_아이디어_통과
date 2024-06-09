@@ -1,0 +1,74 @@
+
+/*
+ * 그리디?
+ * 모든 문자열에 가장 많이 포함된 문자 먼저 선택
+ * ㄴㄴ
+ * 아래 예제에서 정답은 r을 가르쳐 학생들이 첫 번째 문자열을 읽을 수 있게 하는 것이지만, 모든 문자열에 가장 많이 포함된 문자를 먼저
+ * 선택하면 a를 선택해 하나도 읽지 못하게 된다.
+ * 6 1
+ * anta r tica
+ * anta ab tica
+ * anta ac tica
+ * 
+ * DFS!
+ * 26개의 알파벳 중 K개를 선택해 읽을 수 있는 문자열의 개수를 확인
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+	private static List<char[]> words;
+	private static int res = 0;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = br.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static void solve(int prev, int mask, int remainingCount) {
+		int readableWordCount = 0;
+		boolean readable;
+
+		if (remainingCount == 0) {
+			for (char[] word : words) {
+				readable = true;
+				// anta 이후부터 tica 이전까지
+				for (int i = 4; i < word.length - 4 && readable; i++)
+					if ((mask & 1 << word[i] - 65) == 0)
+						readable = false;
+				if (readable)
+					readableWordCount++;
+			}
+			if (res < readableWordCount)
+				res = readableWordCount;
+			return;
+		}
+		for (int i = prev + 1; i < 26; i++)
+			if ((mask & 1 << i) == 0)
+				solve(i, mask | 1 << i, remainingCount - 1);
+	}
+
+	public static void main(String[] args) throws IOException {
+		// k에서 무조건 배워야하는 a, n, t, i, c의 개수인 5를 뺀다.
+		int n = readInt(), k = readInt() - 5;
+
+		words = new ArrayList<>();
+		for (int i = 0; i < n; i++)
+			words.add(br.readLine().toCharArray());
+		solve(-1, 0 | 1 | (1 << 'n' - 'a') | (1 << 't' - 'a') | (1 << 'i' - 'a') | (1 << 'c' - 'a'), k);
+		bw.write(new StringBuilder().append(res).append('\n').toString());
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
