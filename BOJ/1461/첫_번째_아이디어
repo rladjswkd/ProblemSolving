@@ -1,0 +1,134 @@
+
+/*
+ * 예제 3
+ * 6 2
+ * 3 4 5 6 11 -1 -> -1 3 4 5 6 11
+ * 
+ * 책 한 권 들고 -1 갔다가 돌아오기 : + 2
+ * 책 모두 위치 3으로 이동 : + 3 + 3 + 3 + 3 + 3 (2권 갔다놓고 돌아오고 2권 갔다놓고 돌아오고 1권 가져가기)
+ * 책 모두 위치 4로 이동 : + 1 + 1 + 1 (2권 갔다놓고 돌아오고 2권 가져가기)
+ * 책 모두 위치 5로 이동 : + 1 + 1 + 1 (2권 갔다놓고 돌아오고 1권 가져가기)
+ * 책 모두 위치 6으로 이동 : + 1 (2권 가져가기)
+ * 책 모두 위치 11로 이동 : + 5
+ *
+ * 예제 2
+ * 8 3
+ * -18 -9 -4 50 22 -26 40 -45 -> -45 -26 -18 -9 -4 22 40 50
+ * 
+ * 책 5권 -4로 이동 : + 4 + 4 + 4
+ * 책 4권 -9로 이동 : + 5 + 5 + 5
+ * 책 3권 -18로 이동 : + 9
+ * 책 2권 -26으로 이동 : + 8
+ * 책 1권 -45로 이동 : + 19
+ * 0으로 이동 : + 45
+ * 책 3권 22로 이동 : + 22
+ * 책 2권 40으로 이동 : + 18
+ * 책 1권 50으로 이동 : + 10
+ * 
+ * 음수, 양수 중 어느 쪽을 먼저 가야할까?
+ * 책의 수가 적은 쪽?
+ * 가장 멀리있는 책이 0으로부터 가까운 쪽! => 반대쪽으로 가기 위해 그 거리만큼 돌아와야 하기 때문이다.
+ * 
+ * 예제 1
+ * 7 2
+ * -37 2 -6 -39 -29 11 -28 -> -39 -37 -29 -28 -6 2 11
+ * 
+ * 2, 11에 책 원위치 : + 11
+ * 0으로 이동 : + 11
+ * -6에 책 모두 이동 : + 6 + 6 + 6 + 6 + 6
+ * -28에 책 모두 이동 : + 22 + 22 + 22
+ * -29에 책 모두 이동 : + 1 + 1 + 1
+ * -37에 책 모두 이동 : + 8
+ * -39에 책 모두 이동 : + 2
+ * 
+ */
+import java.io.IOException;
+import java.util.Arrays;
+
+public class Main {
+	// bookCount: 전체 책의 개수
+	// capacity: 한 번에 옮길 수 있는 책의 개수
+	// indexMinus: 다음으로 책을 정리해야 할 음수 위치 인덱스
+	// indexPlus: 다음으로 책을 정리해야 할 양수 위치 인덱스
+	// current: 현재 위치
+	private static int bookCount, capacity, indexMinus, indexPlus, current = 0, res = 0;
+	private static int[] positions;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur, sign = System.in.read();
+
+		if (sign != 45)
+			n = sign - 48;
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		if (sign == 45)
+			n = ~n + 1;
+		return n;
+	}
+
+	private static void moveToOrigin() {
+		res += Math.abs(current);
+		current = 0;
+	}
+
+	// 음수 위치 책 제자리로
+	private static void placeNegativeBooks() {
+		int bookCountToMove;
+
+		while (indexMinus >= 0) {
+			bookCountToMove = indexMinus + 1;
+			// 옮길 책의 수를 나타내는 bookCountToMove를 capacity로 나눈 횟수만큼 옮기고, 나머지가 존재한다면 한 번 더 옮긴다.
+			// 단, 이때는 다시 현재 위치로 돌아올 필요가 없다.
+			res += (2 * ((bookCountToMove / capacity) + ((bookCountToMove % capacity) > 0 ? 1 : 0)) - 1)
+					* (current - positions[indexMinus]);
+			current = positions[indexMinus--];
+		}
+	}
+
+	// 양수 위치 책 제자리로
+	private static void placePositiveBooks() {
+		int bookCountToMove;
+
+		while (indexPlus < bookCount) {
+			bookCountToMove = bookCount - indexPlus;
+			res += (2 * ((bookCountToMove / capacity) + ((bookCountToMove % capacity) > 0 ? 1 : 0)) - 1) * (positions[indexPlus] - current);
+			current = positions[indexPlus++];
+		}
+
+	}
+
+	// 책의 위치는 0이 아니다 -> 책의 위치는 음수와 양수 뿐이다.
+	public static void main(String[] args) throws IOException {
+		bookCount = readInt();
+		capacity = readInt();
+		indexMinus = bookCount - 1;
+		indexPlus = 0;
+		positions = new int[bookCount];
+		for (int i = 0; i < bookCount; i++)
+			positions[i] = readInt();
+		Arrays.sort(positions);
+		if (positions[0] > 0)
+			placePositiveBooks();
+		else if (positions[bookCount - 1] < 0)
+			placeNegativeBooks();
+		else {
+			for (int i = 1; i < bookCount; i++) {
+				if (positions[i - 1] < 0 && positions[i] > 0) {
+					indexMinus = i - 1;
+					indexPlus = i;
+					break;
+				}
+			}
+			if (-positions[0] < positions[bookCount - 1]) {
+				placeNegativeBooks();
+				moveToOrigin();
+				placePositiveBooks();
+			} else {
+				placePositiveBooks();
+				moveToOrigin();
+				placeNegativeBooks();
+			}
+		}
+		System.out.println(res);
+	}
+}
