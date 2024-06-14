@@ -1,0 +1,124 @@
+/*
+ * 완전탐색?
+ * 각 원소를 포함하거나 하지 않거나 -> 경우의 수 2
+ * 원소의 최대 개수 40개.
+ * 따라서 그대로 완전 탐색을 하면 2^40 가지의 경우를 확인해야 하므로 시간 초과 & 재귀 호출로 인한 스택 오버플로 발생할듯
+ * 
+ * 백트래킹?
+ * 언제 가지치기? -> 가지치기 할 상황인지 판단할 수 없다.
+ * 예를 들어 현재 원소를 누적 합에 더했을 때 타겟 값을 넘어선다 해도 그 후에 음수를 더해서 타겟 값을 만들 수도 있기 때문이다.
+ * 
+ * 중간에서 만나기 알고리즘!
+ * 
+ * 0. 크기가 n인 수열이 주어진다.
+ * 1. 주어진 수열을 크기가 n/2인 수열 A와 n - n/2인 수열 B로 나눈다.
+ * 2. 수열 A의 가능한 모든 부분수열의 합을 배열 X에 저장하고, 수열 B의 가능한 모든 부분 수열의 합을 배열 Y에 저장한다.
+ * 		-> 배열 X와 Y의 크기는 대략 2^{n/2}다. (배열 X와 Y에는 각각 아무 원소도 선택하지 않았을 때의 값도 포함된다.)
+ * 3. 두 subproblems를 병합한다. 즉, 배열 X와 Y의 각 원소들을 더할 때 그 값이 S인 경우를 찾는다.
+ * 		-> X와 Y에 대해 이중 반복문을 사용하면 결국 O((2^{n/2})^2) = O(2^n)이 되어 시간 초과가 날 것이다.
+ * 		따라서 Y를 정렬 후, X에 대해 순회하며 S - X[i]를 Y에서 이분 탐색해야 한다. -> O(2^{n/2} * log(2^{n/2})) = O(n * 2^{n/2})
+ * 
+ * 참고! S - X[i]가 Y에 여러 개 있을 수 있다. -> 한 개 찾았다고 끝나는 게 아니라 모두 찾아야 한다.
+ */
+
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Main {
+	private static int[] a, b;
+	private static List<Integer> x, y;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur, sign = System.in.read();
+
+		if (sign != 45)
+			n = sign & 15;
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		if (sign == 45)
+			n = ~n + 1;
+		return n;
+	}
+
+	private static void fillX(int value, int index) {
+		if (index == a.length) {
+			x.add(value);
+			return;
+		}
+		// 배열 A에서 현재 인덱스를 포함하지 않는 부분 집합을 고려
+		fillX(value, index + 1);
+		// 배열 A에서 현재 인덱스를 포함하는 부분 집합을 고려
+		fillX(value + a[index], index + 1);
+	}
+
+	private static void fillY(int value, int index) {
+		if (index == b.length) {
+			y.add(value);
+			return;
+		}
+		fillY(value, index + 1);
+		fillY(value + b[index], index + 1);
+	}
+
+	private static int findLowerBound(int value) {
+		int start = 0, end = y.size() - 1, mid, cur;
+
+		while (start < end) {
+			mid = (start + end) >>> 1;
+			cur = y.get(mid);
+			if (cur >= value)
+				end = mid;
+			else
+				start = mid + 1;
+		}
+		// value와 값이 같거나 그보다 큰 값을 찾는 함수이므로 아래의 경우를 생각할 수 있다.
+		// 1. y 내에 value가 있을 때 -> 가장 앞의 value를 값으로 갖는 유효한 인덱스가 존재한다.
+		// 2. y 내에 value가 없을 때 -> value보다 큰 첫 번째 값의 인덱스를 반환하는데, 만약 value보다 큰 값이 없을 땐 어떻게
+		// 하지? -> y.size() 반환. y.get(start) < value일 때!
+		return y.get(start) < value ? y.size() : start;
+	}
+
+	private static int findUpperBound(int value) {
+		int start = 0, end = y.size() - 1, mid, cur;
+
+		while (start < end) {
+			mid = (start + end) >>> 1;
+			cur = y.get(mid);
+			if (cur <= value)
+				start = mid + 1;
+			else
+				end = mid;
+		}
+		// value와 값이 큰 원소의 인덱스를 찾는 함수이므로 아래의 경우를 생각할 수 있다.
+		// 1. value보다 큰 값이 있을 때 -> 해당 인덱스 반환.
+		// 2. value보다 큰 값이 없을 때 -> y.size() 반환
+		return y.get(start) <= value ? y.size() : start;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), s = readInt();
+		// 최대 2^40개가 저장될 수 있으므로 long을 사용해야 한다.
+		// 예를 들어 길이가 40이고 모든 값이 0인 배열에 대해 합이 0인 부분 수열의 개수를 찾아야 하는 경우.
+		long res = 0;
+
+		a = new int[n / 2];
+		b = new int[n - a.length];
+		x = new ArrayList<>(1 << a.length);
+		y = new ArrayList<>(1 << b.length);
+		for (int i = 0; i < a.length; i++)
+			a[i] = readInt();
+		for (int i = 0; i < b.length; i++)
+			b[i] = readInt();
+		fillX(0, 0);
+		fillY(0, 0);
+		Collections.sort(y);
+		for (int value : x)
+			res += findUpperBound(s - value) - findLowerBound(s - value);
+		// a와 b 모두 아무것도 선택하지 않아서 0이되는 경우를 제외
+		if (s == 0)
+			res--;
+		System.out.println(res);
+	}
+}
