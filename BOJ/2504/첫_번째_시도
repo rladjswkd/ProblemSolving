@@ -1,0 +1,74 @@
+/*
+ * 괄호의 값을 계산하는 방법
+ * 1. 재귀
+ * 2. 스택(자료구조)
+ * 
+ * ( -> 2 *
+ * [ -> 3 *
+ * )( 또는 )[ -> 1 + 
+ * ]( 또는 ][ -> 1 + 
+ * ) 또는 ] -> 1
+ * 
+ * 
+ * 1. 이전 문자: (, 현재 문자: ( -> 
+ * 2. 이전 문자: ), 현재 문자: ( -> 
+ * 3. 이전 문자: [, 현재 문자: ( -> 
+ * 4. 이전 문자: ], 현재 문자: ( -> 
+ * 5. 이전 문자: (, 현재 문자: [ -> 
+ * 6. 이전 문자: ), 현재 문자: [ -> 
+ * 7. 이전 문자: [, 현재 문자: [ -> 
+ * 8. 이전 문자: ], 현재 문자: [ -> 
+ * 9. 이전 문자: (, 현재 문자: ) ->	
+ * 10. 이전 문자: ), 현재 문자: ) ->
+ * 11. 이전 문자: [, 현재 문자: ) ->
+ * 12. 이전 문자: ], 현재 문자: ) ->
+ * 13. 이전 문자: (, 현재 문자: ] ->
+ * 14. 이전 문자: ), 현재 문자: ] ->
+ * 15. 이전 문자: [, 현재 문자: ] ->
+ * 16. 이전 문자: ], 현재 문자: ] ->
+ *
+ *
+ */
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+	private static boolean validate(char[] input) {
+		char top;
+		Deque<Character> stack = new ArrayDeque<>();
+
+		for (int i = 0; i < input.length; i++) {
+			// ()()와 같은 상황에서 첫 번째 닫는 괄호 이후에도 연산을 이어갈 수 있다.
+			if (stack.isEmpty()) {
+				stack.addLast(input[i]);
+				continue;
+			}
+			top = stack.getLast();
+			if ((top == '(' && input[i] == ')') || (top == '[' && input[i] == ']'))
+				stack.removeLast();
+			else if (top == '(' || top == '[')
+				stack.addLast(input[i]);
+			else
+				break;
+		}
+		return stack.isEmpty();
+	}
+
+	// 최대값: 3^15 -> int로 충분
+	public static void main(String[] args) throws IOException {
+		char[] input = br.readLine().toCharArray();
+
+		bw.flush();
+		br.close();
+		bw.close();
+	}
+}
