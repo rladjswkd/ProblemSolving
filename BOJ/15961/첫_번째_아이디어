@@ -1,0 +1,96 @@
+
+/*
+ * 슬라이딩 윈도우 같다.
+ * https://wikidocs.net/154706
+ * 
+ * 현재 윈도우 내에 몇 종류의 초밥이 있는지는 하나씩 반복하면서 확인해야하나?
+ * 그럼 슬라이딩 윈도우가 아니지 않나
+ * 해시맵을 쓸까?
+ * 
+ * 첫 번째 아이디어. 통과했지만 다른 제출 코드들에 비해 시간이 효율적이지 못하다.
+ */
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+
+public class Main {
+	private static int readInt() throws IOException {
+		int n = 0, cur;
+
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	private static int solve(int[] sushiSeq, int n, int k, int c) {
+		int start = 0, end = k - 1, res;
+		Map<Integer, Integer> counter = new HashMap<>();
+
+		// 0 ~ k - 1번째 초밥까지 초반 k개의 초밥을 먼저 확인
+		for (int i = 0; i < k; i++)
+			counter.put(sushiSeq[i], counter.getOrDefault(sushiSeq[i], 0) + 1);
+		res = counter.size() + (counter.containsKey(c) ? 0 : 1);
+		// k가 n과 같다면 쿠폰으로 받은 초밥을 확인할 필요가 없으므로 그냥 res 반환
+		if (k == n)
+			return res;
+		// 1 ~ k, 2 ~ k + 1, ... n - 1 ~ k - 2까지 반복해 검사
+		start = 1;
+		end = (end + 1) % n;
+		while (start < n) {
+			// 여기서부턴 start - 1는 항상 sushiSeq의 유효한 인덱스다.
+			counter.put(sushiSeq[start - 1], counter.get(sushiSeq[start - 1]) - 1);
+			if (counter.get(sushiSeq[start - 1]) == 0)
+				counter.remove(sushiSeq[start - 1]);
+			// 다음 초밥 추가
+			counter.put(sushiSeq[end], counter.getOrDefault(sushiSeq[end], 0) + 1);
+			res = Math.max(res, counter.size() + (counter.containsKey(c) ? 0 : 1));
+			start++;
+			end = (end + 1) % n;
+		}
+		return res;
+	}
+
+	// 주석 풀고 보기. k개 초밥의 시작, 끝 인덱스인 start와 end 대신 시작 직전 인덱스인 prev와 k개 초밥의 마지막 직후 인덱스인
+	// next를 사용하는 방식이다.
+	// 쿠폰으로 받은 초밥이 k개의 앞 또는 뒤에 붙어있어야 한다고 잘못 이해해서 짠 코드이므로, 이 부분은 감안해서 보자.
+	// private static int solve(int[] sushiSeq, int n, int k, int c) {
+	// // prev = (0 + n - 1) % n : 0번째 인덱스 이전 인덱스
+	// // next = (k - 1 + 1) % n : k - 1번째 인덱스 다음 인덱스.
+	// int prev = n - 1, next = k % n, res;
+	// Map<Integer, Integer> counter = new HashMap<>();
+
+	// // 0 ~ k - 1번째 초밥까지 초반 k개의 초밥을 먼저 확인
+	// for (int i = 0; i < k; i++)
+	// counter.put(sushiSeq[i], counter.getOrDefault(sushiSeq[i], 0) + 1);
+	// res = counter.size();
+	// // k가 n과 같다면 쿠폰으로 받은 초밥을 확인할 필요가 없으므로 그냥 res 반환
+	// if (k == n)
+	// return res;
+	// // 0 ~ k - 1 초밥의 이전, 이후 초밥을 확인해, 그 값이 c와 같으면 먹을 수 있는 초밥 종류 수를 하나 증가
+	// if (sushiSeq[prev] == c || sushiSeq[next] == c)
+	// res++;
+	// // 1 ~ k, 2 ~ k + 1, ... n - 1 ~ k - 2까지 반복해 검사
+	// prev = (prev + 1) % n;
+	// next = (next + 1) % n;
+	// while (prev < n - 1) {
+	// // 여기서의 prev는 이전 검사에서의 k개의 연속하는 초밥의 시작 인덱스이며, 이를 빼준다.
+	// counter.put(sushiSeq[prev], counter.get(sushiSeq[prev]) - 1);
+	// if (counter.get(sushiSeq[prev]) == 0)
+	// counter.remove(sushiSeq[prev]);
+	// // 여기서 next는 현재 검사의 연속하는 k개의 초밥 그 다음 초밥을 나타낸다.
+	// // 연속하는 k개의 초밥 중 마지막 것을 윈도우에 추가해야 하는데, 이를 위해 next를 활용하려면 next가 n - 1에서 0으로
+	// 넘어가는
+	// // 순간 등을 고려해야 한다.
+	// // 그러느니 그냥 prev, next 대신 start, end를 사용하는 게 나을듯.
+	// }
+	// }
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), d = readInt(), k = readInt(), c = readInt();
+		int[] sushiSeq = new int[n];
+
+		for (int i = 0; i < n; i++)
+			sushiSeq[i] = readInt();
+		System.out.println(solve(sushiSeq, n, k, c));
+	}
+}
