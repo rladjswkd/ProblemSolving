@@ -1,0 +1,72 @@
+/*
+ * 잘못된 아이디어다.
+ * 
+ * 		a	b	c	d	e	f	g	h	i	j	k	l	m	n
+ * b	0 1 1 1 1 1 1 1 1 1 1 1 1 1 
+ * d	0 1 1 2 2 2 2 2 2 2 2 2 2 2
+ * e	0 1 1 2 3 3 3 3 3 3 3 3 3 3
+ * f	0 1 1 2 3 4 4 4 4 4 4 4 4 4
+ * g	0 1 1 2 3 4 5 5 5 5 5 5 5 5
+ * 
+ * 		a	b	c	d	e	f	g	h	i	j	k	l	m	n
+ * e	0	0	0	0	1	1	1	1	1	1	1	1	1	1
+ * f	0	0	0	0	1	2	2	2	2	2	2	2	2	2
+ * g	0 0 0 0 1 2 3 3 3 3 3 3 3 3
+ * 
+ * 		b d e f g
+ * e	0	0	1	1	1
+ * f	0	0	1	2	2
+ * g	0	0	1 2	3
+ * 
+ * 그냥 셋 중에 가장 작은 값 선택하면 안되는 이유가 있을까? 바로 직관적으로 떠오르는 이유가 없다.
+ * 세 문자열 중 두 문자열에 일치하는 문자가 하나도 없다면 0 -> 그럼 나머지 일치 결과에 상관없이 그냥 0이 답.
+ * 두 문자열만 볼 때와 모두를 볼 때 LCS가 다른 경우가 있을까?
+ * 
+ * 반례
+ * 
+ * aaabbbccc
+ * aaacccddd
+ * bbbdddeee
+ * 
+ * 답은 0이지만 3이 출력될 것이다!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * 				
+ * 
+ */
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+
+public class Main {
+	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private static char[] first, second, third;
+
+	private static void calcLCS(int[][] lcs, char[] dim1, char[] dim2) {
+		for (int i = 1; i <= dim1.length; i++) {
+			for (int j = 1; j <= dim2.length; j++) {
+				if (dim1[i - 1] == dim2[j - 1])
+					lcs[i][j] = lcs[i - 1][j - 1] + 1;
+				else
+					lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+			}
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		int[][] lcs1, lcs2, lcs3;
+
+		first = br.readLine().toCharArray();
+		second = br.readLine().toCharArray();
+		third = br.readLine().toCharArray();
+		lcs1 = new int[first.length + 1][second.length + 1];
+		lcs2 = new int[second.length + 1][third.length + 1];
+		lcs3 = new int[third.length + 1][first.length + 1];
+		calcLCS(lcs1, first, second);
+		calcLCS(lcs2, second, third);
+		calcLCS(lcs3, third, first);
+		System.out.println(
+				Math.min(Math.min(lcs1[first.length][second.length], lcs2[second.length][third.length]),
+						lcs3[third.length][first.length]));
+		br.close();
+	}
+}
