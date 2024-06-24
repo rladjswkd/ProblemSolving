@@ -1,0 +1,51 @@
+
+/*
+ * int[][] dp를 이전 행, 현재 행 두개로 줄이기
+ * 10000000 * 100 * 4 = 3800 MB 정도가 필요
+ * 10000000 * 2 * 40 = 76 MB 정도가 필요
+ * 
+ * 시간 복잡도 계산
+ * 100 * (10000000 + 10000000(prev-cur 복사))  = 20억.. 시간초과일 거 같은데
+ */
+import java.io.IOException;
+
+public class Main {
+	private static int itemCount, targetMemory;
+	private static int[] memories, costs;
+	private static int[] prev, cur;
+
+	private static int readInt() throws IOException {
+		int n = System.in.read() & 15, cur;
+
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int totalMemory = 0, totalCost = 0, restMemory;
+
+		itemCount = readInt();
+		targetMemory = readInt();
+		memories = new int[itemCount];
+		costs = new int[itemCount];
+		for (int i = 0; i < itemCount; i++)
+			totalMemory += (memories[i] = readInt());
+		for (int i = 0; i < itemCount; i++)
+			totalCost += (costs[i] = readInt());
+		restMemory = totalMemory - targetMemory;
+		prev = new int[restMemory + 1];
+		cur = new int[restMemory + 1];
+		for (int i = 1; i <= itemCount; i++) {
+			for (int j = 1; j <= restMemory; j++) {
+				if (memories[i - 1] > j)
+					cur[j] = prev[j];
+				else
+					cur[j] = Math.max(cur[j], costs[i - 1] + prev[j - memories[i - 1]]);
+			}
+			for (int j = 1; j <= restMemory; j++)
+				prev[j] = cur[j];
+		}
+		System.out.println(totalCost - cur[restMemory]);
+	}
+}

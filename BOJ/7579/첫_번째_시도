@@ -1,0 +1,58 @@
+
+/*
+ * 다이나믹 프로그래밍 0-1 배낭 문제
+ * 메모리=무게, 비용=가치
+ * 
+ * 원하는 메모리보다 더 많은 메모리를 확보해도 된다.
+ * -> 오리지널 배낭 문제면 가방이 담을 수 있는 용량과 같거나 적은 용량의 물건을 담아야 한다.
+ * 
+ * 최소 비용을 구해야 한다.
+ * -> 오리지널 배낭 문제면 최대 비용을 구해야 한다.
+ * 
+ * 반대로 빼기?
+ * 주어진 앱들이 점유하는 메모리 용량을 다 더한 후, 확보해야 하는 목표 메모리 크기를 여기서 뺸 나머지를 '나머지'라고 하자.
+ * 우리는 나머지를 구하면 된다.
+ * 
+ * 즉, 남겨둘 앱들의 메모리 합을 이용해 이 크기의 메모리 내에서의 최대 비용을 구하고, 이를 총 비용에서 빼면 된다.
+ * 
+ * 아래 코드는 메모리 초과
+ */
+import java.io.IOException;
+
+public class Main {
+	private static int itemCount, targetMemory;
+	private static int[] memories, costs;
+	private static int[][] dp;
+
+	private static int readInt() throws IOException {
+		int n = System.in.read() & 15, cur;
+
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int totalMemory = 0, totalCost = 0, restMemory;
+
+		itemCount = readInt();
+		targetMemory = readInt();
+		memories = new int[itemCount];
+		costs = new int[itemCount];
+		for (int i = 0; i < itemCount; i++)
+			totalMemory += (memories[i] = readInt());
+		for (int i = 0; i < itemCount; i++)
+			totalCost += (costs[i] = readInt());
+		restMemory = totalMemory - targetMemory;
+		dp = new int[itemCount + 1][restMemory + 1];
+		for (int i = 1; i <= itemCount; i++) {
+			for (int j = 1; j <= restMemory; j++) {
+				if (memories[i - 1] > j)
+					dp[i][j] = dp[i - 1][j];
+				else
+					dp[i][j] = Math.max(dp[i - 1][j], costs[i - 1] + dp[i - 1][j - memories[i - 1]]);
+			}
+		}
+		System.out.println(totalCost - dp[itemCount][restMemory]);
+	}
+}
