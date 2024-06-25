@@ -27,17 +27,12 @@
  * 오 가능할 듯.
  * 도킹된 게이트를 나타내는 노드는 -1로 값을 설정하고, 그렇지 않은 노드는 자기 자신의 인덱스를 가리키게 한 후, 범위 내 검색시 무조건 큰 값을 반환하게 하면 될듯
  * 
- * ---
- * 
- * 문제 유형에는 분리 집합이 적혀있었다.
- * 분리 집합? -> g_i에 대해, g_i번째 집합과 g_i-1번째 집합을 union한 후, g_i-1번째 집합을 루트로 설정.
- * 만약 g_i-1번째 집합 또한 루트가 아니라면, g_i-2, g_i-3, ...을 계속 탐색해 루트로 설정
  */
 import java.io.IOException;
 
 public class Main {
 	private static int g, p;
-	private static int[] ds;
+	private static int[] tree;
 
 	private static int readInt() throws IOException {
 		int n = System.in.read() & 15, cur;
@@ -47,50 +42,67 @@ public class Main {
 		return n;
 	}
 
-	private static int find(int node) {
-		int root = node, upper;
+	// start, end는 인덱스 값이므로 실제 게이트 번호로 취급하려면 1을 더해줘야 한다.
+	private static void makeTree(int node, int start, int end) {
+		int mid = (start + end) >>> 1, lChild = node << 1, rChild = lChild + 1;
 
-		while (ds[root] >= 0)
-			root = ds[root];
-		while (ds[node] >= 0) {
-			upper = ds[node];
-			ds[node] = root;
-			node = upper;
+		if (start == end)
+			tree[node] = start;
+		else {
+			makeTree(lChild, start, mid);
+			makeTree(rChild, mid + 1, end);
+			tree[node] = Math.max(tree[lChild], tree[rChild]);
 		}
-		return root;
 	}
 
-	private static void union(int u, int v) {
-		int uRoot = find(u), vRoot = find(v);
+	// 1 ~ g_i번 게이트 범위 내에서 선택할 수 있는 게이트 중 번호가 가장 큰 것을 반환하는 메서드
+	private static int findLastAvailableGate(int node, int start, int end, int left, int right) {
+		int mid = (start + end) >>> 1, lChild = node << 1, rChild = lChild + 1;
 
-		if (uRoot == vRoot)
+		// 범위를 벗어났을 땐 반환값이 선택되면 안되므로 -1을 반환한다.
+		if (right < start || end < left)
+			return -1;
+		if (left <= start && end <= right)
+			return tree[node];
+		else
+			return Math.max(findLastAvailableGate(lChild, start, mid, left, right),
+					findLastAvailableGate(rChild, mid + 1, end, left, right));
+	}
+
+	private static void setGateOccupied(int node, int start, int end, int target) {
+		int mid = (start + end) >>> 1, lChild = node << 1, rChild = lChild + 1;
+
+		if (target < start || end < target)
 			return;
-		else if (uRoot < vRoot) {
-			ds[uRoot] += ds[vRoot];
-			ds[vRoot] = uRoot;
-		} else {
-			ds[vRoot] += ds[uRoot];
-			ds[uRoot] = vRoot;
+		if (start == end)
+			tree[node] = -1;
+		else {
+			setGateOccupied(lChild, start, mid, target);
+			setGateOccupied(rChild, mid + 1, end, target);
+			tree[node] = Math.max(tree[lChild], tree[rChild]);
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
-		int lastGate, res = 0;
+		int index, gate, res = 0;
 
 		g = readInt();
 		p = readInt();
-		// 가장 앞인 0번 인덱스는 선택할 수 있는 게이트가 없다는 걸 나타내는 집합으로 사용하자.
-		ds = new int[g + 1];
-		for (int i = 0; i <= g; i++)
-			ds[i] = -1;
-		while (p-- > 0) {
-			if ((lastGate = find(readInt())) == 0)
+		tree = new int[1 << (int) Math.ceil(Math.log(g) / Math.log(2)) + 1];
+		makeTree(1, 0, g - 1);
+
+		for (index = 0; index < p; index++) {
+			gate = findLastAvailableGate(1, 0, g - 1, 0, readInt() - 1);
+			if (gate >= 0) {
+				res++;
+				setGateOccupied(1, 0, g - 1, gate);
+			} else {
+				index++;
 				break;
-			// 루트는 1 ~ g_i 중 도킹할 수 있는 가장 큰 번호의 게이트를 나타낸다.
-			union(lastGate - 1, lastGate);
-			res++;
+			}
 		}
-		while (p-- > 0)
+		// 남은 입력 처리
+		for (; index < p; index++)
 			readInt();
 		System.out.println(res);
 	}
