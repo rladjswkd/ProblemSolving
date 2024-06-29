@@ -1,0 +1,133 @@
+
+/*
+ * 기존에 사용하던 방식대로 그냥 무조건 기존 lis의 값을 변경한다면, 실제 "증가하는 부분 수열"을 만족하지 않는다.
+ * 
+ * 어떻게 하면 실제 증가하는 부분 수열의 순서를 유지하면서 값을 반영할 수 있을까?
+ * 
+ * ---
+ * 
+ * 주어진 배열을 순회하면서 현재 값이 lis의 마지막 인덱스의 숫자(가장 큰 숫자)보다 작다면 별도의 자료 구조에 저장.
+ * 이후, lis의 마지막 인덱스의 숫자보다 큰 숫자가 들어오면 lis에 반영
+ * 
+ * 별도의 자료 구조에 저장된 값에 따라 틀린 방법이 될 수 있다.
+ * 예를 들어, lis가 [10, 20, 30, 50]이고, 별도의 자료 구조에 저장된 값이 [15, 45, 60]이라고 하자.
+ * 이를 lis에 반영하면 [10, 15, 30, 45, 60]이 될텐데 15는 실제로 30보다 뒤에 나오므로 올바른 증가하는 부분 수열이 되지 못한다.
+ * 
+ * 더욱이, 만약 별도의 자료구조에 저장된 값이 현재 lis의 마지막 값보다 크지 않을 수도 있다.
+ * [15, 20, 25, 30, 35]가 저장되어있을 때, 이를 lis에 반영하면 lis는 [10, 15, 20, 25, 30, 35]가 되어 더 긴 부분 수열이 된다.
+ * lis의 마지막 값보다 큰 값이 들어올 때에만 lis를 업데이트하므로, 이후 더 큰 값이 들어오지 않는다면 lis는 그냥 [10, 20, 30, 50]다.
+ * 
+ * ---
+ * 
+ * 별도의 자료 구조에 저장된 숫자가 lis에 저장된 숫자보다 많다면 반영.
+ * 
+ * 별도의 자료 구조에 같은 숫자가 반복돼 저장된다면 적절하지 않다.
+ * 예를 들어 lis = [10, 20, 30, 50], 별도의 자료구조 = [45, 45, 45, 45, 45]라면 lis에 이를 반영한 후 lis는 [10, 20, 30, 45]가 된다.
+ * 심지어 45가 아닌 25가 반복돼 저장됐었다면 업데이트한 lis는 [10, 20, 25, 50]이 되며, 이는 아예 부분 수열이 아니다.
+ * 
+ * ---
+ * 
+ * set을 이용해 유일한 숫자의 개수만 고려해, 그 개수가 lis의 size보다 크다면 반영.
+ * 
+ * lis = [10, 20, 30, 50], set = [15, 15, 15, 15, 15, 45, 45, 60, 70, 80]이면, 이를 lis에 반영한 후 lis는 [10, 15, 30, 45, 60, 70, 80]이 된다.
+ * 하지만 15는 30보다 나중에 나오는 숫자이므로 올바른 부분 수열이 아니다.
+ * 
+ * ---
+ * 
+ * stack을 이용해, 현재 숫자가 lis에 반영되는 위치가 stack의 top에 있는 숫자가 lis에 반영되는 위치 + 1일 때 stack에 push.
+ * 그렇지 않으면 stack을 비우기
+ * 이를 반복하다가 stack의 top에 있는 숫자가 lis에 반영되는 위치가 lis.size()와 같다면 stack에 있는 모든 숫자들을 lis에 반영하고 stack 비우기
+ * 반복.
+ * 
+ * 이거인듯
+ * 
+ * ---
+ * 
+ * 이 방식은 해결할 수 없는 문제가 있다.
+ * 
+ * 16
+ * -60 -41 -100 8 -8 -52 -62 -61 -76 -52 -52 14 -11 -2 -54 46 
+ * 와 같은 입력이 주어졌을 때, 정답은 길이 7인 [-100 -62 -61 -52 -11 -2 46]가 된다.
+ * 이를 위해선 -100이 0번째 인덱스에 위치해야 하는데, 이 로직에선 -100을 스택에 넣은 다음 8이 들어오면 -100을 버리고 8을 스택에 넣는다.
+ * 
+ * 그렇다면 -100을 계속해서 유지하게 할 수 있는 방법이 있을까?
+ * 없다.
+ * 
+ * 뒤에 나올 숫자들의 구성을 저 시점엔 알 수 없기 때문에 -100을 선택하는 게 이득일지 8을 선택하는 게 이득일지 알 수 없기 때문이다.
+ * 위 상황에선 -100을 선택해야 하겠지만, 아래와 같은 상황에선 -100을 선택하면 안된다.
+ * 5
+ * -60 -41 -100 9 1
+ * 이땐 답이 [-60 -41 9] 또는 [-60 -41 1]이기 때문이다.
+ */
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+public class Main {
+	private static List<Integer> lis = new ArrayList<>();
+	private static Deque<int[]> stack = new ArrayDeque<>();
+
+	private static int readInt() throws IOException {
+		int n = 0, cur, sign = System.in.read();
+
+		if (sign != 45)
+			n = sign & 15;
+		while (47 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		if (sign == 45)
+			n = ~n + 1;
+		return n;
+	}
+
+	private static int findlowerBound(int value) {
+		int start = 0, end = lis.size() - 1, mid;
+
+		while (start < end) {
+			mid = (start + end) >>> 1;
+			if (lis.get(mid) < value)
+				start = mid + 1;
+			else
+				end = mid;
+		}
+		return lis.get(start) >= value ? start : lis.size();
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), cur, indexToInsert;
+		int[] pair;
+		StringBuilder sb = new StringBuilder();
+
+		// 일단 숫자 하나 담고 시작해서 lis.isEmpty()를 반복적으로 확인할 필요성을 제거
+		lis.add(readInt());
+		for (int i = 1; i < n; i++) {
+			indexToInsert = findlowerBound(cur = readInt());
+			// 스택이 비었거나 스택의 top 원소의 lis 내 반영 위치 + 1과 indexToInsert가 같다면 stack에 cur,
+			// indexToInsert를 추가
+			if (stack.isEmpty() || ((pair = stack.getLast())[1] + 1 == indexToInsert))
+				stack.addLast(new int[] { cur, indexToInsert });
+			// 스택이 비어있지 않으면서 stack.getLast()[1] + 1 != indexToInsert일 때 stack 비우고
+			// new int[]{cur, indexToInsert}만 추가하기
+			else {
+				while (!stack.isEmpty())
+					stack.removeLast();
+				stack.addLast(new int[] { cur, indexToInsert });
+			}
+			if (indexToInsert == lis.size()) {
+				// 스택의 top 원소를 lis의 마지막에 추가해주고
+				lis.add(stack.removeLast()[0]);
+				// 스택 내 나머지 원소들은 모두 lis의 적절한 인덱스에 설정
+				while (!stack.isEmpty()) {
+					pair = stack.removeLast();
+					lis.set(pair[1], pair[0]);
+				}
+			}
+		}
+		sb.append(lis.size()).append('\n');
+		sb.append(lis.get(0));
+		for (int i = 1; i < lis.size(); i++)
+			sb.append(' ').append(lis.get(i));
+		System.out.println(sb.toString());
+	}
+}
