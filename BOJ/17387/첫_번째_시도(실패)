@@ -26,8 +26,6 @@
 import java.io.IOException;
 
 public class Main {
-	private static final double eps = 1e-9;
-
 	private static int readInt() throws IOException {
 		int n = 0, cur, sign = System.in.read();
 
@@ -108,7 +106,7 @@ public class Main {
 				// cx2에서의 두 선분의 y값 차이
 				d2 = (s1 * cx2 + i1) - (s2 * cx2 + i2);
 				// d1과 d2의 부호가 바뀌거나, d1이 0, d2가 0이면 두 선분이 교차함을 알 수 있다.
-				if (d1 < 0 && d2 > 0 || d1 > 0 && d2 < 0 || Math.abs(d1) < eps || Math.abs(d2) < eps)
+				if (d1 < 0 && d2 > 0 || d1 > 0 && d2 < 0 || d1 == 0 || d2 == 0)
 					res = 1;
 			}
 		}
