@@ -1,0 +1,122 @@
+
+/*
+ * 브루트포스로 풀면 4000^4 = 256조 개의 연산이 필요해서 시간 제한이 12초든 뭐든 무조건 시간 초과.
+ * 
+ * 이분 탐색?
+ * 
+ * 1. A와 B, C와 D의 모든 쌍을 곱한 결과를 두 배열 X, Y에 담기
+ * n^2 * 2 -> 4000 * 4000 * 2 = 3200만
+ * 
+ * 2. X, Y 둘 중 하나를 오름차순 정렬
+ * nlogn -> 1600만 * log_2(1600만) = 대략 3억 8천
+ * 
+ * 3. X, Y 중 정렬하지 않은 배열을 인덱스 i로 순회하면서 X[i] + Y[j] = 0인 j를 이분 탐색으로 찾기
+ * n * 2 * logn(lower bound와 upper bound) = 대략 7억 7천
+ * 
+ * 대충 12억개의 연산이 필요 -> 12초 이내에 처리 가능하다.
+ * 
+ * ---
+ * 
+ * X, Y를 만들고 정렬하지 않고 A, B, C, D를 적절히 정렬한 후 곱해 X, Y를 정렬된 상태로 만들 수 있으면 더 효율적일텐데 가능한가?
+ * 1. A, B 정렬
+ * 2. A와 B 모두 시작과 끝에 투 포인터(front, rear)를 활용
+ * 	- A[front] < 0, B[rear] < 0
+ * 	- A[front] < 0, B[rear] = 0
+ *  - A[front] < 0, B[rear] > 0
+ *  - A[front] = 0, B[rear] < 0
+ *  - A[front] = 0, B[rear] = 0
+ *  - A[front] = 0, B[rear] > 0
+ *  - A[front] > 0, B[rear] < 0
+ *  - A[front] > 0, B[rear] = 0
+ *  - A[front] > 0, B[rear] > 0
+ * 	- A[rear] < 0, B[front] < 0
+ *	- A[rear] < 0, B[front] = 0
+ *  - A[rear] < 0, B[front] > 0
+ *  - A[rear] = 0, B[front] < 0
+ *  - A[rear] = 0, B[front] = 0
+ *  - A[rear] = 0, B[front] > 0
+ *  - A[rear] > 0, B[front] < 0
+ *  - A[rear] > 0, B[front] = 0
+ *  - A[rear] > 0, B[front] > 0
+ * 3. 하지말자.
+ * ---
+ * 
+ * X[i]에 더했을 때 그 합을 0으로 하는 Y[j]가 배열 Y 내에 동일한 값으로 여러 개 존재할 수 있다. -> lower bound부터 upper bound 직전까지
+ * -> 이분탐색 하는 부분의 연산 횟수는 n*logn이 아닌 n*(logn+logn)이다.
+ * ---
+ * 문제에서 배열에 들어있는 정수의 절댓값은 최대 2^28이라 했으므로, int 타입을 사용해도 문제 없다.
+ * 단, 결과값을 저장하는 변수는 long 타입으로 선언해야 한다.
+ * 
+ */
+import java.io.IOException;
+import java.util.Arrays;
+
+public class Main {
+	private static int[] x, y;
+	private static int size;
+	private static long res = 0;
+
+	private static int readInt() throws IOException {
+		int n = 0, cur, sign = System.in.read();
+
+		if (sign != 45)
+			n = sign & 15;
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		if (sign == 45)
+			n = ~n + 1;
+		return n;
+	}
+
+	private static int findLowerBound(int value) {
+		int start = 0, end = size - 1, mid;
+
+		while (start < end) {
+			mid = (start + end) >>> 1;
+			if (y[mid] < value)
+				start = mid + 1;
+			else
+				end = mid;
+		}
+		return y[start] >= value ? start : size;
+	}
+
+	private static int findUpperBound(int value) {
+		int start = 0, end = size - 1, mid;
+
+		while (start < end) {
+			mid = (start + end) >>> 1;
+			if (y[mid] <= value)
+				start = mid + 1;
+			else
+				end = mid;
+		}
+		return y[start] > value ? start : size;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), base;
+		int[] a = new int[n], b = new int[n], c = new int[n], d = new int[n];
+
+		for (int i = 0; i < n; i++) {
+			a[i] = readInt();
+			b[i] = readInt();
+			c[i] = readInt();
+			d[i] = readInt();
+		}
+		size = n * n;
+		x = new int[size];
+		y = new int[size];
+		for (int i = 0; i < n; i++) {
+			base = i * n;
+			for (int j = 0; j < n; j++) {
+				x[base + j] = a[i] + b[j];
+				y[base + j] = c[i] + d[j];
+			}
+		}
+		Arrays.sort(y);
+		for (int half : x)
+			res += findUpperBound(-half) - findLowerBound(-half);
+		System.out.println(res);
+	}
+}
