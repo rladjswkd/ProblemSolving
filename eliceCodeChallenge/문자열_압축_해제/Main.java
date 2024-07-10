@@ -36,6 +36,7 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		arr = br.readLine().toCharArray();
+		br.close();
 		System.out.println(solve());
 	}
 }
