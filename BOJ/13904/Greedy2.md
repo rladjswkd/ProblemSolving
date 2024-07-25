@@ -1,3 +1,10 @@
+마지막 날짜부터 어떤 과제를 수행할 지 결정하는 방법
+
+예를 들어, 6일차에 수행할 수 있는 과제들은 가장 점수가 큰 과제를 `pending`에서 뺀 후에도 `pending`에 남아있고, 5일차에도 수행할 수 있다.
+
+`pending`에 5일차에 수행할 수 있는 과제들이 들어오면, 5, 6일차에 수행할 수 있는 과제들 중 가장 점수가 큰 과제를 수행하면 된다.
+
+```java
 import java.io.IOException;
 import java.util.PriorityQueue;
 
@@ -34,3 +41,4 @@ public class Main {
 		System.out.println(res);
 	}
 }
+```
