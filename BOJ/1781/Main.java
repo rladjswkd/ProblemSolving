@@ -1,0 +1,35 @@
+import java.io.IOException;
+import java.util.PriorityQueue;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Main {
+	private static int readInt() throws IOException {
+		int n = System.in.read() & 15, cur;
+
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int n = readInt(), deadline = 0, cur, idx = 0, res = 0;
+		List<int[]> deadlineDesc = new ArrayList<>();
+		PriorityQueue<Integer> mostNoodleQ = new PriorityQueue<>((a, b) -> b - a);
+
+		for (int i = 0; i < n; i++) {
+			deadlineDesc.add(new int[] { cur = readInt(), readInt() });
+			if (deadline < cur)
+				deadline = cur;
+		}
+		Collections.sort(deadlineDesc, (a, b) -> b[0] - a[0]);
+		for (int i = deadline; i >= 1; i--) {
+			while (idx < n && deadlineDesc.get(idx)[0] >= i)
+				mostNoodleQ.add(deadlineDesc.get(idx++)[1]);
+			if (!mostNoodleQ.isEmpty())
+				res += mostNoodleQ.poll();
+		}
+		System.out.println(res);
+	}
+}
