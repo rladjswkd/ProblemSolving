@@ -1,0 +1,98 @@
+
+/*
+ * 종이가 10x10이고, 색종이는 1x1, 2x2, 3x3, 4x4, 5x5가 각각 5개씩 있다.
+ * 
+ * 처음엔 10 x 10을 순차 탐색하다가, 셀의 값이 1이면 거기서부터 BFS 방식으로 탐색하되, 5x5까지 정사각형 형태로만 탐색하고
+ * 정사각형이 깨지는 부분부터는 다시 순차탐색을 이어가는 식으로 구현하려 했다.
+ * 하지만 예제 7번을 보면 그런 방식으로 구현하면 올바른 답을 구할 수 없다.
+ * 
+ * -> 5x5부터 시작해서 1x1까지 10x10짜리 종이에서 탐색하기!
+ * 
+ * 일종의 그리딘가?
+ * 
+ * 25 * 6 * 6 + 16 * 7 * 7 + 9 * 8 * 8 + 4 * 9 * 9 + 1 * 10 * 10 = 2684개의 연산
+ * 
+ * 반례
+ * 0 0 0 0 0 0 0 0 0 0
+ * 0 0 1 1 1 1 1 1 0 0
+ * 0 0 1 1 1 1 1 1 0 0
+ * 0 0 1 1 1 1 1 1 0 0
+ * 0 0 1 1 1 1 1 1 0 0
+ * 0 0 1 1 1 1 1 1 0 0
+ * 0 0 1 1 1 1 1 1 0 0
+ * 0 0 0 0 0 0 0 0 0 0
+ * 0 0 0 0 0 0 0 0 0 0
+ * 0 0 0 0 0 0 0 0 0 0
+ * 
+ * 위 방식에 따라 이 예제를 5x5부터 확인하면 올바른 정답을 도출할 수 없다.
+ * 이 예제에선 3x3 4개를 사용하는 것이 최적해다.
+ * 
+ * -> 그리디로는 쉽지 않다.
+ * 
+ * ---
+ * 
+ * 종이의 각 칸을 순회하다가 값이 1이면, 
+ * 현재 칸을 1x1 색종이로 덮는 경우, 2x2 색종이로 덮는 경우, ..., 5x5 색종이로 덮는 경우를 확인하고 
+ * 안되면 돌아가기 -> 백트래킹 -> 값이 1인 모든 칸에 대해 반복
+ * 
+ */
+import java.io.IOException;
+
+public class Main {
+	// 각 행을 하나의 int로 표현하고, 각 열은 int의 0 ~ 10번째 bit를 사용
+	private static int[] paper = new int[10];
+	private static int res = 0;
+
+	private static boolean isCoverable(int start, int length, int mask) {
+		boolean res = true;
+
+		for (int i = 0; i < length; i++) {
+			if ((paper[start + i] & mask) != mask) {
+				res = false;
+				break;
+			}
+		}
+		return res;
+	}
+
+	private static boolean coverPaper(int length, int template) {
+		int count = 0, last = 10 - length + 1, mask;
+
+		for (int i = 0; i < last; i++) {
+			// 0 ~ length - 1까지의 비트가 1로 채워진 template으로 mask를 설정
+			mask = template;
+			for (int j = 0; j < last; j++) {
+				// 현재 칸의 값이 1이라면 length x length 색종이로 덮을 수 있는지 확인하고, 덮을 수 있다면 덮기
+				// 덮기 = 색종이로 덮인 paper 부분의 값들을 0으로 만들기
+				if ((paper[i] & 1 << j) > 0 && isCoverable(i, length, mask)) {
+					count++;
+					for (int k = 0; k < length; k++)
+						paper[i + k] ^= mask;
+				}
+				// mask에서 j번째 비트를 0으로 설정하고 j + length번째 비트를 1로 설정
+				mask ^= 1 << j;
+				mask |= 1 << j + length;
+			}
+		}
+		res += count;
+		return count <= 5 ? true : false;
+	}
+
+	public static void main(String[] args) throws IOException {
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				if ((System.in.read() & 15) == 1)
+					paper[i] |= 1 << j;
+				System.in.read();
+			}
+		}
+		if (coverPaper(5, 0b11111) &&
+				coverPaper(4, 0b1111) &&
+				coverPaper(3, 0b111) &&
+				coverPaper(2, 0b11) &&
+				coverPaper(1, 0b1))
+			System.out.println(res);
+		else
+			System.out.println(-1);
+	}
+}
