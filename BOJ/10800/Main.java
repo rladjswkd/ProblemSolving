@@ -1,0 +1,56 @@
+import java.io.IOException;
+import java.util.Arrays;
+
+public class Main {
+	static class Ball implements Comparable<Ball> {
+		int color, size, index;
+
+		Ball(int color, int size, int index) {
+			this.color = color;
+			this.size = size;
+			this.index = index;
+		}
+
+		@Override
+		public int compareTo(Ball o) {
+			return size - o.size;
+		}
+	}
+
+	private static int n;
+	private static Ball[] balls;
+
+	private static int readInt() throws IOException {
+		int n = System.in.read() & 15, cur;
+
+		while (48 <= (cur = System.in.read()) && cur <= 57)
+			n = (n << 3) + (n << 1) + (cur & 15);
+		return n;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int sizeAcc = 0, from = 0, to;
+		int[] sizeAccByColor = new int[200000], res;
+		StringBuilder sb = new StringBuilder();
+
+		balls = new Ball[n = readInt()];
+		for (int i = 0; i < n; i++)
+			balls[i] = new Ball(readInt() - 1, readInt(), i);
+		Arrays.sort(balls);
+		res = new int[n];
+		while (from < n) {
+			// 색에 관계없이 사이즈가 같은 공들에 대해선 그보다 작은 공까지의 누적값만을 활용해 계산.
+			for (to = from; to < n && balls[to].size == balls[from].size; to++)
+				res[balls[to].index] = sizeAcc - sizeAccByColor[balls[to].color];
+			// 이후 사이즈가 다른 공이 등장하면 직전의 사이즈가 같은 공들을 누적값에 반영.
+			while (from < to) {
+				sizeAcc += balls[from].size;
+				sizeAccByColor[balls[from].color] += balls[from].size;
+				from++;
+			}
+		}
+		for (int v : res)
+			sb.append(v).append('\n');
+		System.out.print(sb.toString());
+	}
+}
