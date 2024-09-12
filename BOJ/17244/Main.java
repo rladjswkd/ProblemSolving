@@ -3,8 +3,8 @@ import java.util.Deque;
 import java.util.ArrayDeque;
 
 public class Main {
-	private static int h, w, xCount, sx, sy, ex, ey, res;
-	private static int[][] house, xArr;
+	private static int h, w, xCount, sx, sy, ex, ey, res, mask;
+	private static int[][] house;
 	private static final int[] dx = { -1, 1, 0, 0 }, dy = { 0, 0, -1, 1 };
 
 	private static int readInt() throws IOException {
@@ -18,28 +18,30 @@ public class Main {
 	private static void solve() {
 		Deque<int[]> q = new ArrayDeque<>();
 		int[] cur;
-		byte[][] visited = new byte[h][w];
-		int size, nx, ny, nc;
+		boolean[][][] visited = new boolean[h][w][mask + 1];
+		int size, nx, ny, nb;
 
-		// 행인덱스, 열인덱스, 방문한 X 칸의 개수
+		// 행인덱스, 열인덱스, 방문한 X 칸에 대한 비트마스킹
 		q.addLast(new int[] { sx, sy, 0 });
-		visited[sx][sy] |= 1 << 0;
-		while (!q.isEmpty() && (visited[ex][ey] & 1 << xCount) == 0) {
+		visited[sx][sy][0] = true;
+		while (!q.isEmpty()) {
 			size = q.size();
-			while (size-- > 0 && (visited[ex][ey] & 1 << xCount) == 0) {
+			while (size-- > 0) {
 				cur = q.removeFirst();
 				for (int i = 0; i < 4; i++) {
 					nx = cur[0] + dx[i];
 					ny = cur[1] + dy[i];
-					nc = cur[2];
-					if (nx < 0 || h <= nx || ny < 0 || w <= ny || (visited[nx][ny] & 1 << cur[2]) > 0 || house[nx][ny] == '#')
+					nb = cur[2];
+					if (nx < 0 || h <= nx || ny < 0 || w <= ny || visited[nx][ny][nb] || house[nx][ny] == '#')
 						continue;
-					if (house[nx][ny] == 'X') {
-						nc++;
-						house[nx][ny] = '.';
+					if (0 <= house[nx][ny] && house[nx][ny] < xCount)
+						nb |= 1 << house[nx][ny];
+					if (nx == ex && ny == ey && nb == mask) {
+						res++;
+						return;
 					}
-					visited[nx][ny] |= 1 << nc;
-					q.addLast(new int[] { nx, ny, nc });
+					visited[nx][ny][nb] = true;
+					q.addLast(new int[] { nx, ny, nb });
 				}
 			}
 			res++;
@@ -51,12 +53,13 @@ public class Main {
 
 		w = readInt();
 		house = new int[h = readInt()][w];
-		xArr = new int[5][];
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
-				if ((ch = System.in.read()) == 'X')
-					xArr[xCount++] = new int[] { i, j };
-				else if (ch == 'S') {
+				if ((ch = System.in.read()) == 'X') {
+					ch = xCount;
+					mask |= 1 << xCount;
+					xCount++;
+				} else if (ch == 'S') {
 					sx = i;
 					sy = j;
 				} else if (ch == 'E') {
