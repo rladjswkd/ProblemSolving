@@ -1,9 +1,14 @@
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class Main {
-	private static int personCount, u, v;
-	private static int[][] graph;
-	private static final int INFINITY = 51;
+	private static int personCount;
+	private static List<List<Integer>> graph;
+	private static int[] scores;
+	private static Deque<Integer> q;
 
 	private static int read() throws IOException {
 		int n = System.in.read() & 15, c;
@@ -13,41 +18,54 @@ public class Main {
 		return n;
 	}
 
-	public static void main(String[] args) throws IOException {
-		int score, bestScore = INFINITY, counter = 0;
-		StringBuilder sb = new StringBuilder();
-		int[] scores;
+	private static void solve(int start) {
+		boolean[] visited = new boolean[personCount];
+		int cur, size, dist = 0;
 
-		graph = new int[personCount = read()][personCount];
-		scores = new int[personCount];
-		for (int i = 0; i < personCount; i++) {
-			for (int j = 0; j < i; j++)
-				graph[i][j] = INFINITY;
-			for (int j = i + 1; j < personCount; j++)
-				graph[i][j] = INFINITY;
+		q.addLast(start);
+		visited[start] = true;
+		while (!q.isEmpty()) {
+			size = q.size();
+			while (size-- > 0) {
+				cur = q.removeFirst();
+				for (int neighbor : graph.get(cur)) {
+					if (!visited[neighbor]) {
+						visited[neighbor] = true;
+						q.addLast(neighbor);
+					}
+				}
+			}
+			dist++;
 		}
-		while ((u = read() - 1) != 130 && (v = read() - 1) != 130)
-			graph[u][v] = graph[v][u] = 1;
-		for (int via = 0; via < personCount; via++)
-			for (int start = 0; start < personCount; start++)
-				for (int end = 0; end < personCount; end++)
-					graph[start][end] = Math.min(graph[start][end], graph[start][via] + graph[via][end]);
-		for (int i = 0; i < personCount; i++) {
-			score = 0;
-			for (int j = 0; j < i; j++)
-				score = Math.max(score, graph[i][j]);
-			for (int j = i + 1; j < personCount; j++)
-				score = Math.max(score, graph[i][j]);
-			if (score < bestScore) {
-				bestScore = score;
-				counter = 1;
-			} else if (score == bestScore)
-				counter++;
-			scores[i] = score;
-		}
-		sb.append(bestScore).append(' ').append(counter).append('\n');
+		scores[start] = dist - 1;
+	}
+
+	public static void main(String[] args) throws IOException {
+		int u, v, score, counter = 1;
+		StringBuilder sb = new StringBuilder();
+
+		graph = new ArrayList<>(personCount = read());
 		for (int i = 0; i < personCount; i++)
-			if (scores[i] == bestScore)
+			graph.add(new ArrayList<>());
+		while ((u = read() - 1) != 130 && (v = read() - 1) != 130) {
+			graph.get(u).add(v);
+			graph.get(v).add(u);
+		}
+		scores = new int[personCount];
+		q = new ArrayDeque<>();
+		for (int i = 0; i < personCount; i++)
+			solve(i);
+		score = personCount + 1;
+		for (int i = 0; i < personCount; i++) {
+			if (scores[i] < score) {
+				score = scores[i];
+				counter = 1;
+			} else if (scores[i] == score)
+				counter++;
+		}
+		sb.append(score).append(' ').append(counter).append('\n');
+		for (int i = 0; i < personCount; i++)
+			if (scores[i] == score)
 				sb.append(i + 1).append(' ');
 		System.out.println(sb.toString());
 	}
