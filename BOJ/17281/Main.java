@@ -3,7 +3,7 @@ import java.io.IOException;
 public class Main {
 	private static int n, bits, res;
 	private static int[][] results;
-	private static int[] order;
+	private static int[] order, scores;
 
 	private static int read() throws IOException {
 		int n = System.in.read() & 15, c;
@@ -13,63 +13,25 @@ public class Main {
 		return n;
 	}
 
-	private static void calculate() {
-		// ground의 오른쪽에서 0번 비트는 출발 지점, 1, 2, 3 비트는 각각 1, 2, 3루를 나타낸다.
-		// 따라서 비트 시프트 연산자를 사용해 처리하면 최대 4 ~ 7비트가 1일 수 있다.
-		int out, ground, player = 0, score = 0;
-		int[] result;
-
-		for (int inning = 0; inning < n; inning++) {
-			result = results[inning];
-			out = ground = 0;
-			while (out < 3) {
-				switch (result[order[player]]) {
-					case 0:
-						out++;
-						break;
-					case 1:
-						ground |= 1;
-						ground <<= 1;
-						for (int i = 4; i <= 7; i++)
-							if ((ground & 1 << i) > 0)
-								score++;
-						ground &= 0b1111;
-						break;
-					case 2:
-						ground |= 1;
-						ground <<= 2;
-						for (int i = 4; i <= 7; i++)
-							if ((ground & 1 << i) > 0)
-								score++;
-						break;
-					case 3:
-						ground |= 1;
-						ground <<= 3;
-						for (int i = 4; i <= 7; i++)
-							if ((ground & 1 << i) > 0)
-								score++;
-						ground &= 0b1111;
-						break;
-					case 4:
-						ground |= 1;
-						ground <<= 4;
-						for (int i = 4; i <= 7; i++)
-							if ((ground & 1 << i) > 0)
-								score++;
-						ground &= 0b1111;
-						break;
-					default:
-						break;
-				}
-				player = (player + 1) % 9;
-			}
-		}
-		res = Math.max(res, score);
-	}
-
 	private static void solve(int idx) {
+		int out, player, score, result, base;
+
 		if (idx == 9) {
-			calculate();
+			player = score = 0;
+			for (int inning = 0; inning < n; inning++) {
+				out = base = 0;
+				while (out < 3) {
+					if ((result = results[inning][order[player]]) == 0)
+						out++;
+					else {
+						base = (base | 1) << result;
+						score += scores[base >>> 4];
+						base &= 0b1110;
+					}
+					player = (player + 1) % 9;
+				}
+			}
+			res = Math.max(res, score);
 			return;
 		}
 		if (idx == 3) {
@@ -95,6 +57,7 @@ public class Main {
 			}
 		}
 		order = new int[9];
+		scores = new int[] { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
 		solve(0);
 		System.out.println(res);
 	}
